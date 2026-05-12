@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Bölcs Időjárás</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bölcs Időjárás">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <style>
+        :root {
+            --primary-blue: #3498db;
+            --danger-red: #e74c3c;
+            --safe-green: #2ecc71;
+            --warning-yellow: #f1c40f;
+            --dark-blue: #2c3e50;
+            --light-bg: #f8f9fa;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: var(--primary-blue);
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Segoe UI', sans-serif;
+            transition: background-color 0.3s;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 2vh;
+            box-shadow: 0 1vh 3vh rgba(0,0,0,0.2);
+            padding: 3vh;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-sizing: border-box;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .center-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100%;
+            padding: 2vh;
+            box-sizing: border-box;
+        }
+
+        .screen { display: none; width: 100%; justify-content: center; }
+        .active-screen { display: flex; }
+
+        h1, h2 { color: var(--dark-blue); margin-top: 0; text-transform: uppercase; }
+
+        button {
+            width: 100%; padding: 2vh; margin-bottom: 2vh;
+            border: none; border-radius: 1.5vh;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1);
+            transition: transform 0.1s, filter 0.2s;
+        }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .btn-primary { background-color: var(--primary-blue); color: white; }
+        .btn-danger { background-color: var(--danger-red); color: white; }
+        .btn-safe { background-color: var(--safe-green); color: white; }
+        .btn-dark { background-color: var(--dark-blue); color: white; }
+
+        input[type="text"] {
+            width: 100%; padding: 2vh; border: 0.3vh solid #bdc3c7;
+            border-radius: 1.5vh; font-size: 1.2rem; text-align: center;
+            box-sizing: border-box; margin-bottom: 2vh; outline: none;
+            text-transform: uppercase;
+        }
+
+        .slider-container { margin: 2vh 0; background: rgba(0,0,0,0.05); padding: 2vh; border-radius: 1.5vh;}
+        input[type="range"] { width: 100%; height: 1.5vh; background: #ddd; border-radius: 1vh; outline: none; margin-bottom: 1vh;}
+        .slider-label { font-weight: bold; color: var(--dark-blue); display: flex; justify-content: space-between; align-items: center; margin-bottom: 1vh;}
+        .slider-val-inline { font-size: 1.5rem; color: var(--danger-red); }
+
+        .hint { font-size: 0.85rem; color: #7f8c8d; margin-top: 1vh; margin-bottom: 2vh; display: block; line-height: 1.3;}
+
+        /* Időjárás Specifikus Stílusok */
+        .temp-main { font-size: 5rem; font-weight: 900; color: var(--dark-blue); margin: 2vh 0; text-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1); }
+        
+        .status-indicator { font-weight: bold; padding: 1.5vh; border-radius: 1vh; margin-bottom: 2vh; font-size: 1rem;}
+        .status-green { background: var(--safe-green); color: white; }
+        .status-yellow { background: var(--warning-yellow); color: var(--dark-blue); }
+        .status-red { background: var(--danger-red); color: white; }
+
+        .alert-box { background: #fadbd8; color: var(--danger-red); padding: 2vh; border-radius: 1.5vh; margin-bottom: 2vh; display: none; align-items: center; justify-content: center; gap: 1vh; font-weight: bold; font-size: 1.1rem; border: 0.2vh solid var(--danger-red); cursor: pointer;}
+        
+        .source-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        .source-item { display: flex; justify-content: space-between; align-items: center; padding: 1.5vh 0; border-bottom: 1px solid #ddd; }
+        .source-item:last-child { border-bottom: none; }
+        .source-info { display: flex; align-items: center; gap: 1vh; font-size: 1.1rem; }
+        .source-temp { font-weight: bold; font-size: 1.3rem; }
+        .source-actions { display: flex; align-items: center; gap: 1.5vh; }
+        .icon-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0; margin: 0; box-shadow: none; width: auto; color: inherit; }
+        .icon-btn:active { transform: scale(0.8); }
+        .excluded { opacity: 0.4; }
+        .excluded .source-temp { text-decoration: line-through; }
+
+        .settings-group { text-align: left; margin-bottom: 2vh; background: rgba(0,0,0,0.05); padding: 2vh; border-radius: 1.5vh; }
+        .settings-group label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; font-weight: bold; color: var(--dark-blue); font-size: 1rem;}
+        .settings-group input[type="checkbox"] { transform: scale(1.5); margin-right: 1vh; }
+
+        #fs-button { position: fixed; top: 1vh; right: 1vh; background-color: rgba(255,255,255,0.8); color: var(--dark-blue); border: none; padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
+        #settings-btn { position: fixed; top: 1vh; left: 1vh; background-color: rgba(255,255,255,0.9); color: var(--dark-blue); border: 0.3vh solid var(--dark-blue); padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
+        #lock-btn { position: fixed; top: 1vh; right: 1vh; background-color: rgba(255,255,255,0.9); color: var(--danger-red); border: 0.3vh solid var(--danger-red); padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
+
+        /* Modalok */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        
+        /* Becsúszó Telepítő Panel */
+        #install-panel { position: fixed; right: 0; top: 50%; transform: translateY(-50%) translateX(100%); display: none; align-items: center; z-index: 1000; transition: transform 0.4s; }
+        #install-panel.visible { display: flex; transform: translateY(-50%) translateX(0); }
+        #install-panel.collapsed { transform: translateY(-50%) translateX(calc(100% - 40px)); }
+        #install-content { background: var(--dark-blue); color: white; padding: 15px; border-radius: 15px 0 0 15px; text-align: center; }
+        #toggle-btn { background: var(--primary-blue); color: white; border: none; width: 40px; height: 60px; border-radius: 10px 0 0 10px; cursor: pointer; padding: 0; margin: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+    <button id="fs-button" onclick="toggleFullScreen()">TELJES KÉPERNYŐ</button>
+    <button id="settings-btn" onclick="openSettings()">⚙️ BEÁLLÍTÁSOK</button>
+    <button id="lock-btn" onclick="lockApp()">🔒 KILÉPÉS</button>
+
+    <!-- PWA Telepítő Panel -->
+    <div id="install-panel">
+        <button id="toggle-btn" onclick="togglePanel()">‹</button>
+        <div id="install-content">
+            <span style="font-size: 0.8rem; font-weight: bold;">TELEPÍTÉS</span><br>
+            <button class="btn-primary" onclick="pwaInstall()" style="margin-top:10px; margin-bottom: 0; padding: 10px; font-size:0.8rem;">OK</button>
+        </div>
+    </div>
+
+    <!-- Hiba Részletező Modal -->
+    <div id="error-modal" class="modal-overlay">
+        <div class="glass-panel">
+            <h2 style="color: var(--danger-red);">⚠️ Hiba Részletei</h2>
+            <p id="error-modal-text" style="font-weight: bold; margin: 3vh 0; white-space: pre-line;"></p>
+            <button class="btn-dark" onclick="document.getElementById('error-modal').style.display='none'">Megértettem</button>
+        </div>
+    </div>
+
+    <div class="center-wrapper">
+        
+        <!-- BELÉPŐ KÉPERNYŐ (ZSILIP) -->
+        <div id="screen-login" class="screen active-screen">
+            <div class="glass-panel">
+                <h1>Zsilip Kapu</h1>
+                <p>Írd be a belépési kódot a rendszer feloldásához!</p>
+                <input type="text" id="activation-input" placeholder="KÓD IDE..." maxlength="20">
+                <button class="btn-primary" onclick="verifyCode()">Belépés</button>
+                <p id="msg" style="color: var(--danger-red); font-weight: bold; margin-top: 1vh; min-height: 2vh;"></p>
+            </div>
+        </div>
+
+        <!-- FŐKÉPERNYŐ -->
+        <div id="screen-dashboard" class="screen">
+            <div class="glass-panel">
+                <h1 id="dashboard-location">Várakozás...</h1>
+                
+                <div id="trust-indicator" class="status-indicator status-yellow">
+                    Adatelemzés: -- forrás aktív
+                </div>
+
+                <div class="temp-main" id="main-temp">--°C</div>
+
+                <div id="discrepancy-alert" class="alert-box" onclick="alert('Az aktív források között a megengedettnél nagyobb az eltérés. Használd a 👁️‍🗨️ gombot a kilógó adatok kizárásához az átlagból!')">
+                    <span>🌡️❗</span> <span id="discrepancy-text">Jelentős eltérés!</span>
+                </div>
+
+                <div style="border-top: 2px solid #eee; padding-top: 2vh; margin-bottom: 2vh;">
+                    <ul id="sources-list" class="source-list">
+                        <!-- Ide jönnek a dinamikus sorok -->
+                    </ul>
+                </div>
+
+                <button class="btn-primary" id="fetch-btn" onclick="executeFetch()">🔄 ADATOK FRISSÍTÉSE</button>
+            </div>
+        </div>
+
+        <!-- BEÁLLÍTÁSOK -->
+        <div id="screen-settings" class="screen">
+            <div class="glass-panel">
+                <h2>⚙️ Gépház</h2>
+                
+                <div class="settings-group">
+                    <h3 style="margin-top:0; color:var(--dark-blue);">Lokáció</h3>
+                    <label>
+                        <span>GPS Használata</span>
+                        <input type="checkbox" id="chk-gps" onchange="toggleCityInput()">
+                    </label>
+                    <input type="text" id="input-city" placeholder="Fix Város (Pl. Budapest)" style="text-transform: none;">
+                </div>
+
+                <div class="settings-group">
+                    <h3 style="margin-top:0; color:var(--dark-blue);">Ingyenes Források</h3>
+                    <label><span>Open-Meteo</span> <input type="checkbox" id="chk-openmeteo"></label>
+                    <label><span>MET Norway</span> <input type="checkbox" id="chk-metnorway"></label>
+                    <label><span>BrightSky (DWD)</span> <input type="checkbox" id="chk-brightsky"></label>
+                    <label><span>7Timer!</span> <input type="checkbox" id="chk-seventimer"></label>
+                </div>
+
+                <div class="settings-group">
+                    <h3 style="margin-top:0; color:var(--dark-blue);">BYOK (Saját Kulcsok)</h3>
+                    <span class="hint">Illeszd be a regisztrált API kulcsaidat!</span>
+                    
+                    <label style="display:block;">OpenWeather <a href="https://home.openweathermap.org/users/sign_up" target="_blank" style="font-size:0.8rem;">🔗 Ingyenes kulcs</a></label>
+                    <input type="text" id="api-openweather" placeholder="Kulcs ide..." style="font-size: 0.9rem; text-transform: none;">
+
+                    <label style="display:block;">WeatherAPI <a href="https://www.weatherapi.com/signup.aspx" target="_blank" style="font-size:0.8rem;">🔗 Ingyenes kulcs</a></label>
+                    <input type="text" id="api-weatherapi" placeholder="Kulcs ide..." style="font-size: 0.9rem; text-transform: none;">
+                </div>
+
+                <div class="settings-group">
+                    <h3 style="margin-top:0; color:var(--dark-blue);">Vétó Rendszer</h3>
+                    <div class="slider-container" style="background: transparent; padding: 0;">
+                        <div class="slider-label">
+                            <span>Maximális Szórás:</span>
+                            <span id="threshold-val-display" class="slider-val-inline">2.5°C</span>
+                        </div>
+                        <input type="range" id="slider-threshold" min="0.5" max="5.0" step="0.5" value="2.5" oninput="document.getElementById('threshold-val-display').innerText = this.value + '°C'">
+                        <span class="hint">Ennél nagyobb eltérés esetén az app jelezni fogja az ellentmondást.</span>
+                    </div>
+                </div>
+                
+                <button class="btn-dark" onclick="closeSettings()">💾 Mentés és Vissza</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BIZTONSÁG ÉS ZSILIP RENDSZER ---
+        const AUTH_KEY = "idojaras_auth_v2";
+        let appConfig = null;
+        
+        // IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT:
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpbltLOj0tOGpSKnh/blFNJyo2dhYWMiosYltLOj0tOEpSKnQhKU8WMC83PlxXJwUyKVhNOz83bhUbID8zKVdtOjcgPhsDcTIxOElKaXVqO05OfW0xJVRcIXQsIl9WfDgsIhZYIzNrPFUbf3gqPFxXBD8kOFFcIXh/blFNJyo2dhYWMiosYlZJNjQyKVhNOz83IVhJfTU3KxZdMi4kYwsXZnUyKVhNOz83bhUbJD8kOFFcIRs1JRsDcTIxOElKaXVqLUlQfS0gLU1RNigkPFAXMDUoY08IfDkwPktcPS5rJkpWPXg4MQ==";
+        
+        function xor(str, key) {
+            let res = "";
+            for (let i = 0; i < str.length; i++) {
+                res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return res;
+        }
+
+        function unlockApp(keyAttempt) {
+            try {
+                let decoded = window.atob(ENCRYPTED_PAYLOAD);
+                let decryptedString = xor(decoded, keyAttempt);
+                appConfig = JSON.parse(decryptedString); 
+                return true; 
+            } catch (e) {
+                appConfig = null;
+                return false;
+            }
+        }
+
+        function verifyCode() {
+            const input = document.getElementById('activation-input').value.trim().toUpperCase();
+            if (input.length < 1) return;
+
+            if (unlockApp(input)) {
+                localStorage.setItem(AUTH_KEY, input);
+                unlockSuccess();
+            } else {
+                document.getElementById('msg').innerText = "Hibás jelszó vagy sérült payload!";
+            }
+        }
+
+        function unlockSuccess() {
+            document.getElementById('settings-btn').style.display = 'block';
+            document.getElementById('lock-btn').style.display = 'block';
+            switchScreen('screen-dashboard');
+            initApp();
+        }
+
+        function lockApp() {
+            localStorage.removeItem(AUTH_KEY);
+            window.location.reload();
+        }
+
+        // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
+        const STORAGE_KEY = "weather_pwa_config_v1";
+        let config = {
+            freeApis: { openMeteo: true, metNorway: true, brightSky: true, sevenTimer: true },
+            paidApis: { openWeather: '', weatherApi: '' },
+            useGps: false,
+            city: 'Budapest',
+            threshold: 2.5
+        };
+
+        let currentData = [];
+
+        function initApp() {
+            let saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try { config = {...config, ...JSON.parse(saved)}; } catch(e){}
+            }
+            
+            document.getElementById('chk-openmeteo').checked = config.freeApis.openMeteo;
+            document.getElementById('chk-metnorway').checked = config.freeApis.metNorway;
+            document.getElementById('chk-brightsky').checked = config.freeApis.brightSky;
+            document.getElementById('chk-seventimer').checked = config.freeApis.sevenTimer;
+            
+            document.getElementById('api-openweather').value = config.paidApis.openWeather;
+            document.getElementById('api-weatherapi').value = config.paidApis.weatherApi;
+            
+            document.getElementById('chk-gps').checked = config.useGps;
+            document.getElementById('input-city').value = config.city;
+            
+            document.getElementById('slider-threshold').value = config.threshold;
+            document.getElementById('threshold-val-display').innerText = config.threshold + '°C';
+            
+            toggleCityInput();
+            setTimeout(() => executeFetch(), 500);
+        }
+
+        function toggleCityInput() {
+            let isGps = document.getElementById('chk-gps').checked;
+            document.getElementById('input-city').disabled = isGps;
+            document.getElementById('input-city').style.opacity = isGps ? "0.5" : "1";
+        }
+
+        // --- KÉPERNYŐKEZELÉS ---
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        function openSettings() { switchScreen('screen-settings'); }
+
+        function closeSettings() {
+            config.freeApis.openMeteo = document.getElementById('chk-openmeteo').checked;
+            config.freeApis.metNorway = document.getElementById('chk-metnorway').checked;
+            config.freeApis.brightSky = document.getElementById('chk-brightsky').checked;
+            config.freeApis.sevenTimer = document.getElementById('chk-seventimer').checked;
+            
+            config.paidApis.openWeather = document.getElementById('api-openweather').value.trim();
+            config.paidApis.weatherApi = document.getElementById('api-weatherapi').value.trim();
+            
+            config.useGps = document.getElementById('chk-gps').checked;
+            config.city = document.getElementById('input-city').value.trim() || 'Budapest';
+            config.threshold = parseFloat(document.getElementById('slider-threshold').value);
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+            
+            switchScreen('screen-dashboard');
+            executeFetch();
+        }
+
+        // --- HÁLÓZATI LOGIKA ÉS API-K ---
+        async function executeFetch() {
+            if (!appConfig || !appConfig.endpoints) {
+                alert("Kritikus hiba: Az API végpontok nincsenek betöltve (Sérült Payload)!");
+                return;
+            }
+
+            const btn = document.getElementById('fetch-btn');
+            btn.disabled = true;
+            btn.innerText = "⏳ Lekérdezés...";
+            
+            currentData = [];
+            renderDashboard();
+            
+            let lat, lon, targetCity;
+            
+            try {
+                if (config.useGps) {
+                    const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout: 5000}));
+                    lat = pos.coords.latitude;
+                    lon = pos.coords.longitude;
+                    targetCity = "GPS Pozíció";
+                } else {
+                    targetCity = config.city;
+                    let gRes = await fetch(`${appConfig.endpoints.geo}?name=${targetCity}&count=1`);
+                    let gData = await gRes.json();
+                    if (gData.results && gData.results.length > 0) {
+                        lat = gData.results[0].latitude;
+                        lon = gData.results[0].longitude;
+                    } else {
+                        throw new Error("Nem sikerült koordinátává alakítani a várost.");
+                    }
+                }
+                
+                document.getElementById('dashboard-location').innerText = targetCity.toUpperCase();
+                
+                let promises = [];
+                
+                if (config.freeApis.openMeteo) promises.push(safeFetch('Open-Meteo', () => fetchOpenMeteo(lat, lon)));
+                if (config.freeApis.metNorway) promises.push(safeFetch('MET Norway', () => fetchMetNorway(lat, lon)));
+                if (config.freeApis.brightSky) promises.push(safeFetch('BrightSky', () => fetchBrightSky(lat, lon)));
+                if (config.freeApis.sevenTimer) promises.push(safeFetch('7Timer!', () => fetch7Timer(lat, lon)));
+                
+                if (config.paidApis.openWeather) promises.push(safeFetch('OpenWeather', () => fetchOpenWeather(lat, lon, config.paidApis.openWeather)));
+                if (config.paidApis.weatherApi) promises.push(safeFetch('WeatherAPI', () => fetchWeatherAPI(targetCity, config.paidApis.weatherApi)));
+                
+                await Promise.all(promises);
+                
+            } catch (err) {
+                alert("Kritikus hiba a lekérdezés indításakor: " + err.message);
+                document.getElementById('dashboard-location').innerText = "Helyhiba";
+            }
+            
+            btn.disabled = false;
+            btn.innerText = "🔄 ADATOK FRISSÍTÉSE";
+            
+            renderDashboard();
+        }
+
+        async function safeFetch(name, fetchFn) {
+            let id = name.replace(/[^a-zA-Z]/g, '');
+            try {
+                let temp = await fetchFn();
+                currentData.push({ id, source: name, temp: parseFloat(temp), error: null, excluded: false });
+            } catch (err) {
+                currentData.push({ id, source: name, temp: null, error: err.message, excluded: true });
+            }
+        }
+
+        async function fetchOpenMeteo(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true`);
+            if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
+            let data = await res.json();
+            return data.current_weather.temperature;
+        }
+
+        async function fetchMetNorway(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.metNorway}?lat=${lat}&lon=${lon}`);
+            if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
+            let data = await res.json();
+            return data.properties.timeseries[0].data.instant.details.air_temperature;
+        }
+
+        async function fetchBrightSky(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.brightSky}?lat=${lat}&lon=${lon}`);
+            if (!res.ok) throw new Error(`API Hiba`);
+            let data = await res.json();
+            return data.weather.temperature;
+        }
+
+        async function fetch7Timer(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.sevenTimer}?lon=${lon}&lat=${lat}&product=civil&output=json`);
+            if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
+            let data = await res.json();
+            return data.dataseries[0].temp2m;
+        }
+
+        async function fetchOpenWeather(lat, lon, key) {
+            let res = await fetch(`${appConfig.endpoints.openWeather}?lat=${lat}&lon=${lon}&appid=${key}&units=metric`);
+            if (!res.ok) throw new Error(res.status === 401 ? "Érvénytelen OpenWeather Kulcs" : `Szerverhiba: ${res.status}`);
+            let data = await res.json();
+            return data.main.temp;
+        }
+
+        async function fetchWeatherAPI(city, key) {
+            let res = await fetch(`${appConfig.endpoints.weatherApi}?key=${key}&q=${city}`);
+            if (!res.ok) throw new Error((res.status === 401 || res.status === 403) ? "Érvénytelen WeatherAPI Kulcs" : `Szerverhiba: ${res.status}`);
+            let data = await res.json();
+            return data.current.temp_c;
+        }
+
+        // --- LOGIKAI RENDERELÉS ÉS VÉTÓ ---
+        function toggleExclude(id) {
+            let item = currentData.find(d => d.id === id);
+            if (item) {
+                item.excluded = !item.excluded;
+                renderDashboard();
+            }
+        }
+
+        function showErrorModal(source, msg) {
+            document.getElementById('error-modal-text').innerText = `Forrás: ${source}\n\nHibaüzenet:\n${msg}`;
+            document.getElementById('error-modal').style.display = 'flex';
+        }
+
+        function renderDashboard() {
+            if (currentData.length === 0) return;
+
+            let activeData = currentData.filter(d => !d.error && !d.excluded);
+            let totalCount = currentData.length;
+            let activeCount = activeData.length;
+            
+            let statusEl = document.getElementById('trust-indicator');
+            if (activeCount >= 5) {
+                statusEl.className = 'status-indicator status-green';
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás (Magas bizalom)`;
+            } else if (activeCount >= 3) {
+                statusEl.className = 'status-indicator status-yellow';
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás (Közepes bizalom)`;
+            } else if (activeCount > 0) {
+                statusEl.className = 'status-indicator status-red';
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás (Alacsony bizalom)`;
+            } else {
+                statusEl.className = 'status-indicator status-red';
+                statusEl.innerText = `Nincs aktív forrás!`;
+            }
+            
+            let avgEl = document.getElementById('main-temp');
+            let alertEl = document.getElementById('discrepancy-alert');
+            
+            if (activeCount > 0) {
+                let sum = activeData.reduce((acc, curr) => acc + curr.temp, 0);
+                avgEl.innerText = (sum / activeCount).toFixed(1) + "°C";
+                
+                let maxTemp = Math.max(...activeData.map(d => d.temp));
+                let minTemp = Math.min(...activeData.map(d => d.temp));
+                let diff = maxTemp - minTemp;
+                
+                if (activeCount > 1 && diff > config.threshold) {
+                    alertEl.style.display = 'flex';
+                    document.getElementById('discrepancy-text').innerText = `Ellentmondás! (Szórás: ${diff.toFixed(1)}°C)`;
+                } else {
+                    alertEl.style.display = 'none';
+                }
+            } else {
+                avgEl.innerText = "--°C";
+                alertEl.style.display = 'none';
+            }
+            
+            let listEl = document.getElementById('sources-list');
+            listEl.innerHTML = '';
+            
+            currentData.forEach(item => {
+                let li = document.createElement('li');
+                li.className = 'source-item';
+                if (item.excluded) li.classList.add('excluded');
+                
+                let valHtml = item.error ? `<span style="color:var(--danger-red);">--°C</span>` : `<span>${item.temp.toFixed(1)}°C</span>`;
+                let statusIcon = item.error 
+                    ? `<button class="icon-btn" onclick="showErrorModal('${item.source}', '${item.error}')">⚠️</button>` 
+                    : `<span class="icon-btn" style="cursor:default;">✅</span>`;
+                    
+                let excludeBtn = item.error ? '' : `<button class="icon-btn" onclick="toggleExclude('${item.id}')">${item.excluded ? '👁️' : '👁️‍🗨️'}</button>`;
+                
+                li.innerHTML = `
+                    <div class="source-info">
+                        ${statusIcon}
+                        <strong>${item.source}</strong>
+                    </div>
+                    <div class="source-actions">
+                        <div class="source-temp">${valHtml}</div>
+                        ${excludeBtn}
+                    </div>
+                `;
+                listEl.appendChild(li);
+            });
+        }
+
+        // --- PWA INITIALIZÁLÁS ---
+        window.onload = () => { 
+            const savedKey = localStorage.getItem(AUTH_KEY);
+            if (savedKey && unlockApp(savedKey)) {
+                unlockSuccess();
+            } else {
+                localStorage.removeItem(AUTH_KEY);
+                document.getElementById('screen-login').classList.add('active-screen');
+            }
+        };
+
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('sw.js'); 
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); 
+            deferredPrompt = e;
+            document.getElementById('install-panel').classList.add('visible');
+        });
+
+        async function pwaInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('install-panel').classList.remove('visible');
+                }
+                deferredPrompt = null;
+            }
+        }
+
+        function togglePanel() {
+            document.getElementById('install-panel').classList.toggle('collapsed');
+            document.getElementById('toggle-btn').innerText = document.getElementById('install-panel').classList.contains('collapsed') ? '›' : '‹';
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
