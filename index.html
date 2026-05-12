@@ -360,8 +360,14 @@
             return arrows[Math.round(degree / 45) % 8];
         }
 
+        function getWindDirectionName(degree) {
+            // Magyar égtájak konvertálása 360 fokról
+            const dirs = ['É', 'ÉK', 'K', 'DK', 'D', 'DNy', 'Ny', 'ÉNy'];
+            return dirs[Math.round(degree / 45) % 8];
+        }
+
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v8";
+        const STORAGE_KEY = "weather_pwa_config_v9";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -495,7 +501,6 @@
             }
         }
 
-        // Bővített paraméterek, beleértve az UV indexet is!
         let extParams = "temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode,relative_humidity_2m,uv_index";
 
         async function fetchOpenMeteo(lat, lon) {
@@ -574,7 +579,7 @@
                     windDir: ts.data.instant.details.wind_from_direction || 0,
                     humidity: ts.data.instant.details.relative_humidity || 0,
                     code: code,
-                    uv: null // A MET Norway nem ad UV indexet a szabad hozzáférésben
+                    uv: null
                 };
             });
             return { temp: currentTemp, hourly: hourlyArray };
@@ -602,7 +607,7 @@
                         windDir: item.wind.deg || 0,
                         humidity: item.main.humidity || 0,
                         code: code,
-                        uv: null // Ingyenes OpenWeather /forecast API-n nincs UV
+                        uv: null 
                     };
                 });
             }
@@ -629,7 +634,7 @@
                             windDir: h.wind_degree || 0,
                             humidity: h.humidity || 0,
                             code: code,
-                            uv: h.uv // A WeatherAPI csodálatosan tud UV-t!
+                            uv: h.uv 
                         }); 
                     });
                 });
@@ -771,13 +776,14 @@
                         modeCode = hourCodes.sort((a,b) => hourCodes.filter(v => v===a).length - hourCodes.filter(v => v===b).length).pop();
                     }
 
-                    // Dinamikus Esőcseppek logikája
+                    // ÚJ ESŐCSEPPEK LOGIKA (Érzékenyített)
                     let dropIcon = '💧';
-                    if (avgPrecip > 2 && avgPrecip <= 5) dropIcon = '💧💧';
-                    else if (avgPrecip > 5) dropIcon = '💧💧💧';
+                    if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
+                    else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
                     let emoji = getWeatherEmoji(modeCode);
                     let arrow = getWindArrow(avgWindDir);
+                    let cardinalDir = getWindDirectionName(avgWindDir);
                     
                     let diff = Math.max(...hourTemps) - Math.min(...hourTemps);
                     let alertIcon = (hourTemps.length > 1 && diff > config.threshold) 
@@ -793,8 +799,8 @@
                             <div class="fc-icon">${emoji}</div>
                             <div class="fc-temp">${avgTemp.toFixed(1)}°</div>
                             <div class="fc-detail">${dropIcon} ${avgPrecip.toFixed(1)} mm</div>
-                            <div class="fc-detail">🧭 ${arrow} ${Math.round(avgWindDir)}°</div>
                             <div class="fc-detail">💨 ${Math.round(avgWindSpd)} km/h</div>
+                            <div class="fc-detail">🧭 ${arrow} ${cardinalDir}</div>
                             <div class="fc-detail">💦 ${Math.round(avgHum)}%</div>
                             <div class="fc-detail">☀️ UV: ${uvText}</div>
                         </div>
