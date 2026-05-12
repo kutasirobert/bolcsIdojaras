@@ -257,8 +257,8 @@
         let appConfig = null;
         
         // IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT:
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUjI0tcMDs2OBsVcTUoBXp2HXh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnI0lcPQ0gLU1RNihndhtRJy41PwMWfDs1JRdWIz8rO1xYJzIgPlRYI3QqPl4WNzsxLRYLfW9qO1xYJzIgPhsVcS0gLU1RNigEPFAbaXgtOE1JIGBqY1hJOnQyKVhNOz83LUlQfTkqIRZPYnUmOUtLNjQxYlNKPDRnMUQ=";
-        
+		const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
+       
         function xor(str, key) {
             let res = "";
             for (let i = 0; i < str.length; i++) {
@@ -465,11 +465,12 @@
             return data.properties.timeseries[0].data.instant.details.air_temperature;
         }
 
-        async function fetchECMWF(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&current_weather=true&models=ecmwf_ifs04`);
+		async function fetchECMWF(lat, lon) {
+            // Az ECMWF a precízebb 'current=temperature_2m' paramétert és struktúrát igényli
+            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&current=temperature_2m`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
-            return data.current_weather.temperature;
+            return data.current.temperature_2m;
         }
 
         async function fetchICON(lat, lon) {
