@@ -10,7 +10,6 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     
     <meta name="mobile-web-app-capable" content="yes">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bölcs Időjárás">
@@ -53,28 +52,19 @@
         }
 
         .center-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            width: 100%;
-            padding: 2vh;
-            box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; width: 100%; padding: 2vh; box-sizing: border-box;
         }
 
         .screen { display: none; width: 100%; justify-content: center; }
         .active-screen { display: flex; }
 
-        h1, h2 { color: var(--dark-blue); margin-top: 0; text-transform: uppercase; }
+        h1, h2, h3 { color: var(--dark-blue); margin-top: 0; text-transform: uppercase; }
 
         button {
-            width: 100%; padding: 2vh; margin-bottom: 2vh;
-            border: none; border-radius: 1.5vh;
-            font-size: 1.2rem; font-weight: bold; cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1);
-            transition: transform 0.1s, filter 0.2s;
+            width: 100%; padding: 2vh; margin-bottom: 2vh; border: none; border-radius: 1.5vh;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1); transition: transform 0.1s, filter 0.2s;
         }
         button:active { transform: scale(0.97); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -85,9 +75,8 @@
         .btn-dark { background-color: var(--dark-blue); color: white; }
 
         input[type="text"] {
-            width: 100%; padding: 2vh; border: 0.3vh solid #bdc3c7;
-            border-radius: 1.5vh; font-size: 1.2rem; text-align: center;
-            box-sizing: border-box; margin-bottom: 2vh; outline: none;
+            width: 100%; padding: 2vh; border: 0.3vh solid #bdc3c7; border-radius: 1.5vh;
+            font-size: 1.2rem; text-align: center; box-sizing: border-box; margin-bottom: 2vh; outline: none;
             text-transform: uppercase;
         }
 
@@ -98,15 +87,44 @@
 
         .hint { font-size: 0.85rem; color: #7f8c8d; margin-top: 1vh; margin-bottom: 2vh; display: block; line-height: 1.3;}
 
-        /* Időjárás Specifikus Stílusok */
-        .temp-main { font-size: 5rem; font-weight: 900; color: var(--dark-blue); margin: 2vh 0; text-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1); }
+        /* Időjárás Műszerfal UI */
+        .temp-main-container {
+            display: inline-flex; align-items: center; justify-content: center; gap: 1.5vh;
+            margin: 1vh 0 2vh 0; cursor: pointer; padding: 1vh 3vh; border-radius: 2vh;
+            background: rgba(255,255,255,0.5); border: 2px solid transparent; transition: all 0.2s;
+        }
+        .temp-main-container:active { transform: scale(0.95); background: rgba(255,255,255,0.8); }
+        .temp-main-container.has-error { border-color: var(--warning-yellow); }
         
-        .status-indicator { font-weight: bold; padding: 1.5vh; border-radius: 1vh; margin-bottom: 2vh; font-size: 1rem;}
+        .temp-main { font-size: 4.5rem; font-weight: 900; color: var(--dark-blue); text-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1); margin: 0;}
+        .main-status-icon { font-size: 2.5rem; }
+
+        .status-indicator { font-weight: bold; padding: 1vh; border-radius: 1vh; margin-bottom: 1vh; font-size: 0.9rem;}
         .status-green { background: var(--safe-green); color: white; }
         .status-yellow { background: var(--warning-yellow); color: var(--dark-blue); }
         .status-red { background: var(--danger-red); color: white; }
 
-        .alert-box { background: #fadbd8; color: var(--danger-red); padding: 2vh; border-radius: 1.5vh; margin-bottom: 2vh; display: none; align-items: center; justify-content: center; gap: 1vh; font-weight: bold; font-size: 1.1rem; border: 0.2vh solid var(--danger-red); cursor: pointer;}
+        /* Előrejelzés Stílusok */
+        .forecast-section { border-top: 2px solid #eee; padding-top: 2vh; margin-bottom: 2vh; text-align: left; }
+        .forecast-title { font-size: 1rem; color: var(--dark-blue); margin-bottom: 1vh; text-align: center;}
+        
+        .forecast-row { display: flex; gap: 1vh; overflow-x: auto; padding-bottom: 1vh; scrollbar-width: none; }
+        .forecast-row::-webkit-scrollbar { display: none; }
+        .forecast-card { 
+            background: rgba(0,0,0,0.04); padding: 1.5vh; border-radius: 1.5vh; min-width: 65px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .forecast-time { font-size: 0.85rem; color: #7f8c8d; font-weight: bold;}
+        .forecast-temp { font-size: 1.2rem; color: var(--dark-blue); font-weight: 900; margin-top: 0.5vh;}
+        .forecast-alert { font-size: 0.8rem; margin-top: 0.5vh; display: inline-block;}
+
+        .blocks-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1vh; }
+        .block-card { background: rgba(0,0,0,0.04); padding: 1vh; border-radius: 1vh; text-align: center; }
+        .block-name { font-size: 0.85rem; color: #7f8c8d; font-weight: bold;}
+        .block-temp { font-size: 1.3rem; color: var(--dark-blue); font-weight: 900; margin-top: 0.2vh;}
+
+        /* Modalok */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
         
         .source-list { list-style: none; padding: 0; margin: 0; text-align: left; }
         .source-item { display: flex; justify-content: space-between; align-items: center; padding: 1.5vh 0; border-bottom: 1px solid #ddd; }
@@ -127,10 +145,6 @@
         #settings-btn { position: fixed; top: 1vh; left: 1vh; background-color: rgba(255,255,255,0.9); color: var(--dark-blue); border: 0.3vh solid var(--dark-blue); padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
         #lock-btn { position: fixed; top: 1vh; right: 1vh; background-color: rgba(255,255,255,0.9); color: var(--danger-red); border: 0.3vh solid var(--danger-red); padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
 
-        /* Modalok */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        
-        /* Becsúszó Telepítő Panel */
         #install-panel { position: fixed; right: 0; top: 50%; transform: translateY(-50%) translateX(100%); display: none; align-items: center; z-index: 1000; transition: transform 0.4s; }
         #install-panel.visible { display: flex; transform: translateY(-50%) translateX(0); }
         #install-panel.collapsed { transform: translateY(-50%) translateX(calc(100% - 40px)); }
@@ -144,7 +158,6 @@
     <button id="settings-btn" onclick="openSettings()">⚙️ BEÁLLÍTÁSOK</button>
     <button id="lock-btn" onclick="lockApp()">🔒 KILÉPÉS</button>
 
-    <!-- PWA Telepítő Panel -->
     <div id="install-panel">
         <button id="toggle-btn" onclick="togglePanel()">‹</button>
         <div id="install-content">
@@ -153,7 +166,7 @@
         </div>
     </div>
 
-    <!-- Hiba Részletező Modal -->
+    <!-- Hiba Modal -->
     <div id="error-modal" class="modal-overlay">
         <div class="glass-panel">
             <h2 style="color: var(--danger-red);">⚠️ Hiba Részletei</h2>
@@ -162,9 +175,21 @@
         </div>
     </div>
 
+    <!-- Részletek Modal (A Források Listája) -->
+    <div id="details-modal" class="modal-overlay">
+        <div class="glass-panel" style="max-height: 80vh; display:flex; flex-direction:column;">
+            <h2 style="margin-bottom: 0;">Források</h2>
+            <p class="hint">A kizáráshoz (👁️‍🗨️) kattints az ikonra.</p>
+            <div style="flex:1; overflow-y:auto; margin-bottom:2vh; border-top: 1px solid #eee; padding-top: 1vh;">
+                <ul id="sources-list" class="source-list"></ul>
+            </div>
+            <button class="btn-dark" onclick="closeDetailsModal()" style="margin-bottom: 0;">Bezárás</button>
+        </div>
+    </div>
+
     <div class="center-wrapper">
         
-        <!-- BELÉPŐ KÉPERNYŐ (ZSILIP) -->
+        <!-- BELÉPŐ KÉPERNYŐ -->
         <div id="screen-login" class="screen active-screen">
             <div class="glass-panel">
                 <h1>Zsilip Kapu</h1>
@@ -184,19 +209,33 @@
                     Adatelemzés: -- forrás aktív
                 </div>
 
-                <div class="temp-main" id="main-temp">--°C</div>
-
-                <div id="discrepancy-alert" class="alert-box" onclick="alert('Az aktív források között a megengedettnél nagyobb az eltérés. Használd a 👁️‍🗨️ gombot a kilógó adatok kizárásához az átlagból!')">
-                    <span>🌡️❗</span> <span id="discrepancy-text">Jelentős eltérés!</span>
+                <!-- Kattintható Fő Hőmérséklet (Itt nyílik a Modal) -->
+                <div id="main-temp-btn" class="temp-main-container" onclick="openDetailsModal()">
+                    <div class="temp-main" id="main-temp">--°C</div>
+                    <div class="main-status-icon" id="main-icon">⏳</div>
+                </div>
+                
+                <div id="discrepancy-text" style="color: var(--danger-red); font-weight:bold; font-size:0.9rem; margin-bottom:2vh; display:none;">
+                    ⚠️ Jelentős eltérés a források között!
                 </div>
 
-                <div style="border-top: 2px solid #eee; padding-top: 2vh; margin-bottom: 2vh;">
-                    <ul id="sources-list" class="source-list">
-                        <!-- Ide jönnek a dinamikus sorok -->
-                    </ul>
+                <!-- Következő 6 óra -->
+                <div class="forecast-section" id="forecast-hourly-section" style="display: none;">
+                    <div class="forecast-title">Következő 6 óra</div>
+                    <div class="forecast-row" id="forecast-hourly-container">
+                        <!-- Generált 6 óra -->
+                    </div>
                 </div>
 
-                <button class="btn-primary" id="fetch-btn" onclick="executeFetch()">🔄 ADATOK FRISSÍTÉSE</button>
+                <!-- Napi Blokkok -->
+                <div class="forecast-section" id="forecast-daily-section" style="display: none; border-top:none; padding-top:0;">
+                    <div class="forecast-title" style="margin-top: 1vh;">Mai Nap Áttekintése</div>
+                    <div class="blocks-container" id="forecast-blocks-container">
+                        <!-- Generált Napi Blokkok -->
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="fetch-btn" onclick="executeFetch()" style="margin-top:1vh;">🔄 ADATOK FRISSÍTÉSE</button>
             </div>
         </div>
 
@@ -253,17 +292,15 @@
 
     <script>
         // --- BIZTONSÁG ÉS ZSILIP RENDSZER ---
-        const AUTH_KEY = "idojaras_auth_v2";
+        const AUTH_KEY = "idojaras_auth_v3";
         let appConfig = null;
         
-        // IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT:
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
+        // --- IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT ---
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic="; 
         
         function xor(str, key) {
             let res = "";
-            for (let i = 0; i < str.length; i++) {
-                res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            }
+            for (let i = 0; i < str.length; i++) { res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length)); }
             return res;
         }
 
@@ -273,22 +310,16 @@
                 let decryptedString = xor(decoded, keyAttempt);
                 appConfig = JSON.parse(decryptedString); 
                 return true; 
-            } catch (e) {
-                appConfig = null;
-                return false;
-            }
+            } catch (e) { return false; }
         }
 
         function verifyCode() {
             const input = document.getElementById('activation-input').value.trim().toUpperCase();
             if (input.length < 1) return;
-
             if (unlockApp(input)) {
                 localStorage.setItem(AUTH_KEY, input);
                 unlockSuccess();
-            } else {
-                document.getElementById('msg').innerText = "Hibás jelszó vagy sérült payload!";
-            }
+            } else { document.getElementById('msg').innerText = "Hibás jelszó vagy sérült payload!"; }
         }
 
         function unlockSuccess() {
@@ -303,40 +334,30 @@
             window.location.reload();
         }
 
-        // --- SEGÉDFÜGGVÉNY: Ékezetek eltávolítása az API hívásokhoz ---
-        function removeAccents(str) {
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
+        function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v3";
+        const STORAGE_KEY = "weather_pwa_config_v4";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
-            useGps: false,
-            city: 'Budapest',
-            threshold: 2.5
+            useGps: false, city: 'Budapest', threshold: 2.5
         };
 
         let currentData = [];
 
         function initApp() {
             let saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try { config = {...config, ...JSON.parse(saved)}; } catch(e){}
-            }
+            if (saved) { try { config = {...config, ...JSON.parse(saved)}; } catch(e){} }
             
             document.getElementById('chk-openmeteo').checked = config.freeApis.openMeteo;
             document.getElementById('chk-metnorway').checked = config.freeApis.metNorway;
             document.getElementById('chk-omecmwf').checked = config.freeApis.omECMWF;
             document.getElementById('chk-omicon').checked = config.freeApis.omICON;
-            
             document.getElementById('api-openweather').value = config.paidApis.openWeather;
             document.getElementById('api-weatherapi').value = config.paidApis.weatherApi;
-            
             document.getElementById('chk-gps').checked = config.useGps;
             document.getElementById('input-city').value = config.city;
-            
             document.getElementById('slider-threshold').value = config.threshold;
             document.getElementById('threshold-val-display').innerText = config.threshold + '°C';
             
@@ -350,43 +371,46 @@
             document.getElementById('input-city').style.opacity = isGps ? "0.5" : "1";
         }
 
-        // --- KÉPERNYŐKEZELÉS ---
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
             document.getElementById(screenId).classList.add('active-screen');
         }
 
         function openSettings() { switchScreen('screen-settings'); }
-
         function closeSettings() {
             config.freeApis.openMeteo = document.getElementById('chk-openmeteo').checked;
             config.freeApis.metNorway = document.getElementById('chk-metnorway').checked;
             config.freeApis.omECMWF = document.getElementById('chk-omecmwf').checked;
             config.freeApis.omICON = document.getElementById('chk-omicon').checked;
-            
             config.paidApis.openWeather = document.getElementById('api-openweather').value.trim();
             config.paidApis.weatherApi = document.getElementById('api-weatherapi').value.trim();
-            
             config.useGps = document.getElementById('chk-gps').checked;
             config.city = document.getElementById('input-city').value.trim() || 'Budapest';
             config.threshold = parseFloat(document.getElementById('slider-threshold').value);
             
             localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-            
             switchScreen('screen-dashboard');
             executeFetch();
         }
 
+        function openDetailsModal() {
+            if(currentData.length > 0) document.getElementById('details-modal').style.display = 'flex';
+        }
+        function closeDetailsModal() { document.getElementById('details-modal').style.display = 'none'; }
+        function showErrorModal(id) {
+            let item = currentData.find(d => d.id === id);
+            if(item) {
+                document.getElementById('error-modal-text').innerText = `Forrás: ${item.source}\n\nHibaüzenet:\n${item.error}`;
+                document.getElementById('error-modal').style.display = 'flex';
+            }
+        }
+
         // --- HÁLÓZATI LOGIKA ÉS API-K ---
         async function executeFetch() {
-            if (!appConfig || !appConfig.endpoints) {
-                alert("Kritikus hiba: Az API végpontok nincsenek betöltve (Sérült Payload)!");
-                return;
-            }
+            if (!appConfig || !appConfig.endpoints) { alert("Kritikus hiba: API végpontok hiányoznak!"); return; }
 
             const btn = document.getElementById('fetch-btn');
-            btn.disabled = true;
-            btn.innerText = "⏳ Lekérdezés...";
+            btn.disabled = true; btn.innerText = "⏳ Lekérdezés...";
             
             currentData = [];
             renderDashboard();
@@ -396,151 +420,135 @@
             try {
                 if (config.useGps) {
                     const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout: 5000}));
-                    lat = pos.coords.latitude;
-                    lon = pos.coords.longitude;
-                    targetCity = "GPS Pozíció";
+                    lat = pos.coords.latitude; lon = pos.coords.longitude; targetCity = "GPS Pozíció";
                 } else {
                     targetCity = config.city;
-                    let cleanQuery = removeAccents(targetCity); // A geocoder is jobban szereti tisztán
+                    let cleanQuery = removeAccents(targetCity);
                     let gRes = await fetch(`${appConfig.endpoints.geo}?name=${cleanQuery}&count=1`);
                     let gData = await gRes.json();
                     if (gData.results && gData.results.length > 0) {
-                        lat = gData.results[0].latitude;
-                        lon = gData.results[0].longitude;
-                    } else {
-                        throw new Error("Nem sikerült koordinátává alakítani a várost.");
-                    }
+                        lat = gData.results[0].latitude; lon = gData.results[0].longitude;
+                    } else { throw new Error("Nem sikerült koordinátává alakítani a várost."); }
                 }
                 
                 document.getElementById('dashboard-location').innerText = targetCity.toUpperCase();
                 
                 let promises = [];
                 
+                // Nyílt Modellek (Órás előrejelzéssel kérjük le őket!)
                 if (config.freeApis.openMeteo) promises.push(safeFetch('Open-Meteo', () => fetchOpenMeteo(lat, lon)));
                 if (config.freeApis.metNorway) promises.push(safeFetch('MET Norway', () => fetchMetNorway(lat, lon)));
                 if (config.freeApis.omECMWF) promises.push(safeFetch('ECMWF Modell', () => fetchECMWF(lat, lon)));
                 if (config.freeApis.omICON) promises.push(safeFetch('Német ICON', () => fetchICON(lat, lon)));
                 
+                // Kulcsos Modellek (Csak aktuális pillanat)
                 if (config.paidApis.openWeather) promises.push(safeFetch('OpenWeather', () => fetchOpenWeather(lat, lon, config.paidApis.openWeather)));
                 if (config.paidApis.weatherApi) {
-                    // WeatherAPI ékezettelenített városnévvel
                     let cleanApiCity = targetCity === "GPS Pozíció" ? `${lat},${lon}` : removeAccents(targetCity);
                     promises.push(safeFetch('WeatherAPI', () => fetchWeatherAPI(cleanApiCity, config.paidApis.weatherApi)));
                 }
                 
                 await Promise.all(promises);
-                
             } catch (err) {
-                alert("Kritikus hiba a lekérdezés indításakor: " + err.message);
+                alert("Kritikus hiba: " + err.message);
                 document.getElementById('dashboard-location').innerText = "Helyhiba";
             }
             
-            btn.disabled = false;
-            btn.innerText = "🔄 ADATOK FRISSÍTÉSE";
-            
+            btn.disabled = false; btn.innerText = "🔄 ADATOK FRISSÍTÉSE";
             renderDashboard();
         }
 
         async function safeFetch(name, fetchFn) {
             let id = name.replace(/[^a-zA-Z]/g, '');
             try {
-                let temp = await fetchFn();
-                currentData.push({ id, source: name, temp: parseFloat(temp), error: null, excluded: false });
+                let result = await fetchFn();
+                // Ha a függvény objektumot ad vissza, akkor van benne 'temp' és 'hourly' is.
+                if (typeof result === 'object' && result.temp !== undefined) {
+                    currentData.push({ id, source: name, temp: result.temp, hourly: result.hourly, error: null, excluded: false });
+                } else {
+                    currentData.push({ id, source: name, temp: parseFloat(result), hourly: null, error: null, excluded: false });
+                }
             } catch (err) {
-                currentData.push({ id, source: name, temp: null, error: err.message, excluded: true });
+                currentData.push({ id, source: name, temp: null, hourly: null, error: err.message, excluded: true });
             }
         }
 
         async function fetchOpenMeteo(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true`);
+            let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m&forecast_days=2`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
-            return data.current_weather.temperature;
+            
+            let hourlyArray = data.hourly.time.map((t, i) => ({
+                timeEpoch: new Date(t + "Z").getTime() / 1000,
+                temp: data.hourly.temperature_2m[i]
+            }));
+            
+            return { temp: data.current_weather.temperature, hourly: hourlyArray };
         }
 
         async function fetchMetNorway(lat, lon) {
             let res = await fetch(`${appConfig.endpoints.metNorway}?lat=${lat}&lon=${lon}`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
-            return data.properties.timeseries[0].data.instant.details.air_temperature;
+            
+            let currentTemp = data.properties.timeseries[0].data.instant.details.air_temperature;
+            let hourlyArray = data.properties.timeseries.map(ts => ({
+                timeEpoch: new Date(ts.time).getTime() / 1000,
+                temp: ts.data.instant.details.air_temperature
+            }));
+
+            return { temp: currentTemp, hourly: hourlyArray };
         }
 
-		async function fetchECMWF(lat, lon) {
-            // Az ECMWF nem ad direkt "current" adatot, ezért lekérjük az órás (hourly) előrejelzést 2 napra,
-            // hogy biztosan benne legyen a jelenlegi pillanat (UTC időzóna szerint is).
+        async function fetchECMWF(lat, lon) {
             let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&forecast_days=2`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
             
-            // Ellenőrizzük, hogy megkaptuk-e a menetrendet
-            if (!data.hourly || !data.hourly.temperature_2m || !data.hourly.time) {
-                throw new Error("Az ECMWF modell nem adott vissza órás adatokat.");
-            }
+            if (!data.hourly || !data.hourly.temperature_2m) throw new Error("ECMWF adatstruktúra hiba.");
 
-            // 1. Aktuális időpont (másodperc alapú timestamp)
+            let hourlyArray = data.hourly.time.map((t, i) => ({
+                timeEpoch: new Date(t + "Z").getTime() / 1000,
+                temp: data.hourly.temperature_2m[i]
+            }));
+
             let nowEpoch = Math.floor(Date.now() / 1000);
-            
-            // 2. Végigmegyünk az időbélyegeken, és megkeressük a mostani pillanathoz legközelebbit
-            let closestIndex = 0;
-            let minDiff = Infinity;
+            let closest = hourlyArray.reduce((prev, curr) => (Math.abs(curr.timeEpoch - nowEpoch) < Math.abs(prev.timeEpoch - nowEpoch) ? curr : prev));
 
-            for (let i = 0; i < data.hourly.time.length; i++) {
-                // Az API "2026-05-12T12:00" formátumot ad UTC-ben. Rácsapunk egy "Z"-t, hogy a böngésző is tisztán UTC-nek lássa.
-                let timeEpoch = new Date(data.hourly.time[i] + "Z").getTime() / 1000; 
-                let diff = Math.abs(timeEpoch - nowEpoch);
-                
-                // Csak akkor fogadjuk el a találatot, ha van is adat (néha a távoli jövő/múlt null)
-                if (diff < minDiff && data.hourly.temperature_2m[i] !== null) {
-                    minDiff = diff;
-                    closestIndex = i;
-                }
-            }
-
-            let currentTemp = data.hourly.temperature_2m[closestIndex];
-            
-            if (currentTemp === null || typeof currentTemp === 'undefined') {
-                throw new Error("Sikeres letöltés, de nincs érvényes hőfok az aktuális órához.");
-            }
-            
-            return currentTemp;
+            return { temp: closest.temp, hourly: hourlyArray };
         }
 
         async function fetchICON(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.omICON}?latitude=${lat}&longitude=${lon}&current_weather=true&models=icon_seamless`);
+            let res = await fetch(`${appConfig.endpoints.omICON}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m&models=icon_seamless&forecast_days=2`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
-            return data.current_weather.temperature;
+            
+            let hourlyArray = data.hourly.time.map((t, i) => ({
+                timeEpoch: new Date(t + "Z").getTime() / 1000,
+                temp: data.hourly.temperature_2m[i]
+            }));
+            
+            return { temp: data.current_weather.temperature, hourly: hourlyArray };
         }
 
         async function fetchOpenWeather(lat, lon, key) {
             let res = await fetch(`${appConfig.endpoints.openWeather}?lat=${lat}&lon=${lon}&appid=${key}&units=metric`);
-            if (!res.ok) throw new Error(res.status === 401 ? "Érvénytelen OpenWeather Kulcs" : `Szerverhiba: ${res.status}`);
+            if (!res.ok) throw new Error(res.status === 401 ? "Érvénytelen Kulcs" : `Hiba: ${res.status}`);
             let data = await res.json();
             return data.main.temp;
         }
 
         async function fetchWeatherAPI(cityStr, key) {
             let res = await fetch(`${appConfig.endpoints.weatherApi}?key=${key}&q=${cityStr}`);
-            if (!res.ok) throw new Error((res.status === 401 || res.status === 403) ? "Érvénytelen WeatherAPI Kulcs" : `Szerverhiba: ${res.status}`);
+            if (!res.ok) throw new Error((res.status === 401 || res.status === 403) ? "Érvénytelen Kulcs" : `Hiba: ${res.status}`);
             let data = await res.json();
             return data.current.temp_c;
         }
 
-        // --- LOGIKAI RENDERELÉS ÉS VÉTÓ ---
+        // --- RENDERELÉS ÉS FELDOLGOZÁS ---
         function toggleExclude(id) {
             let item = currentData.find(d => d.id === id);
-            if (item) {
-                item.excluded = !item.excluded;
-                renderDashboard();
-            }
-        }
-
-        function showErrorModal(id) {
-            let item = currentData.find(d => d.id === id);
-            if(item) {
-                document.getElementById('error-modal-text').innerText = `Forrás: ${item.source}\n\nHibaüzenet:\n${item.error}`;
-                document.getElementById('error-modal').style.display = 'flex';
-            }
+            if (item) { item.excluded = !item.excluded; renderDashboard(); }
         }
 
         function renderDashboard() {
@@ -551,23 +559,33 @@
             let activeCount = activeData.length;
             
             let statusEl = document.getElementById('trust-indicator');
+            let mainIcon = document.getElementById('main-icon');
+            let mainContainer = document.getElementById('main-temp-btn');
+            
+            // 1. Állapotjelző beállítása
             if (activeCount >= 5) {
                 statusEl.className = 'status-indicator status-green';
-                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás (Magas bizalom)`;
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás`;
+                mainIcon.innerHTML = `<span style="color:var(--safe-green);">✅</span>`;
             } else if (activeCount >= 3) {
                 statusEl.className = 'status-indicator status-yellow';
-                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás (Közepes bizalom)`;
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás`;
+                mainIcon.innerHTML = `<span>⚠️</span>`;
             } else if (activeCount > 0) {
                 statusEl.className = 'status-indicator status-red';
-                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás (Alacsony bizalom)`;
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás`;
+                mainIcon.innerHTML = `<span>⚠️</span>`;
             } else {
                 statusEl.className = 'status-indicator status-red';
                 statusEl.innerText = `Nincs aktív forrás!`;
+                mainIcon.innerHTML = `<span>❌</span>`;
             }
             
             let avgEl = document.getElementById('main-temp');
-            let alertEl = document.getElementById('discrepancy-alert');
+            let discText = document.getElementById('discrepancy-text');
+            mainContainer.classList.remove('has-error');
             
+            // 2. Fő Hőmérséklet számítása
             if (activeCount > 0) {
                 let sum = activeData.reduce((acc, curr) => acc + curr.temp, 0);
                 avgEl.innerText = (sum / activeCount).toFixed(1) + "°C";
@@ -577,74 +595,140 @@
                 let diff = maxTemp - minTemp;
                 
                 if (activeCount > 1 && diff > config.threshold) {
-                    alertEl.style.display = 'flex';
-                    document.getElementById('discrepancy-text').innerText = `Ellentmondás! (Szórás: ${diff.toFixed(1)}°C)`;
-                } else {
-                    alertEl.style.display = 'none';
-                }
+                    discText.style.display = 'block';
+                    mainIcon.innerHTML = `<span>❗</span>`;
+                    mainContainer.classList.add('has-error');
+                } else { discText.style.display = 'none'; }
             } else {
-                avgEl.innerText = "--°C";
-                alertEl.style.display = 'none';
+                avgEl.innerText = "--°C"; discText.style.display = 'none';
             }
             
+            // 3. Források Listája (Modalban)
             let listEl = document.getElementById('sources-list');
             listEl.innerHTML = '';
-            
             currentData.forEach(item => {
-                let li = document.createElement('li');
-                li.className = 'source-item';
+                let li = document.createElement('li'); li.className = 'source-item';
                 if (item.excluded) li.classList.add('excluded');
                 
                 let valHtml = item.error ? `<span style="color:var(--danger-red);">--°C</span>` : `<span>${item.temp.toFixed(1)}°C</span>`;
-                let statusIcon = item.error 
-                    ? `<button class="icon-btn" onclick="showErrorModal('${item.id}')">⚠️</button>` 
-                    : `<span class="icon-btn" style="cursor:default;">✅</span>`;
-                    
-                let excludeBtn = item.error ? '' : `<button class="icon-btn" onclick="toggleExclude('${item.id}')">${item.excluded ? '👁️' : '👁️‍🗨️'}</button>`;
+                let statusIcon = item.error ? `<button class="icon-btn" onclick="showErrorModal('${item.id}'); event.stopPropagation();">⚠️</button>` : `<span class="icon-btn" style="cursor:default;">✅</span>`;
+                let excludeBtn = item.error ? '' : `<button class="icon-btn" onclick="toggleExclude('${item.id}'); event.stopPropagation();">${item.excluded ? '👁️' : '👁️‍🗨️'}</button>`;
                 
-                li.innerHTML = `
-                    <div class="source-info">
-                        ${statusIcon}
-                        <strong>${item.source}</strong>
-                    </div>
-                    <div class="source-actions">
-                        <div class="source-temp">${valHtml}</div>
-                        ${excludeBtn}
-                    </div>
-                `;
+                li.innerHTML = `<div class="source-info">${statusIcon}<strong>${item.source}</strong></div><div class="source-actions"><div class="source-temp">${valHtml}</div>${excludeBtn}</div>`;
                 listEl.appendChild(li);
             });
+
+            // 4. ELŐREJELZÉS FELDOLGOZÁSA (Csak ha van órás adatunk)
+            renderForecasts(activeData);
         }
 
-        // --- PWA INITIALIZÁLÁS ---
+        function renderForecasts(activeData) {
+            let hourlySources = activeData.filter(d => d.hourly && d.hourly.length > 0);
+            let hourlyContainer = document.getElementById('forecast-hourly-container');
+            let dailyContainer = document.getElementById('forecast-blocks-container');
+            
+            if (hourlySources.length === 0) {
+                document.getElementById('forecast-hourly-section').style.display = 'none';
+                document.getElementById('forecast-daily-section').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('forecast-hourly-section').style.display = 'block';
+            document.getElementById('forecast-daily-section').style.display = 'block';
+            
+            let nowEpoch = Math.floor(Date.now() / 1000);
+            let currentHourEpoch = nowEpoch - (nowEpoch % 3600); // Kerekítés az aktuális óra elejére
+            
+            // --- Következő 6 óra ---
+            hourlyContainer.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                let targetEpoch = currentHourEpoch + (i * 3600);
+                let hourTemps = [];
+                
+                hourlySources.forEach(source => {
+                    // Keresünk egy 30 percen belüli találatot a modell adataiban
+                    let point = source.hourly.find(h => Math.abs(h.timeEpoch - targetEpoch) < 1800);
+                    if (point && point.temp !== null) hourTemps.push(point.temp);
+                });
+
+                if (hourTemps.length > 0) {
+                    let avg = hourTemps.reduce((a, b) => a + b, 0) / hourTemps.length;
+                    let diff = Math.max(...hourTemps) - Math.min(...hourTemps);
+                    let alertIcon = (hourTemps.length > 1 && diff > config.threshold) ? `<span class="forecast-alert">⚠️</span>` : '';
+                    
+                    let timeLabel = new Date(targetEpoch * 1000).getHours() + ":00";
+                    
+                    hourlyContainer.innerHTML += `
+                        <div class="forecast-card">
+                            <div class="forecast-time">${timeLabel}</div>
+                            <div class="forecast-temp">${avg.toFixed(1)}°</div>
+                            ${alertIcon}
+                        </div>
+                    `;
+                }
+            }
+
+            // --- Mai Nap Blokkok (0-6, 6-12, 12-18, 18-24) ---
+            dailyContainer.innerHTML = '';
+            let d = new Date(); d.setHours(0,0,0,0);
+            let midnightEpoch = d.getTime() / 1000;
+            
+            const blocks = [
+                { name: "Éjszaka", start: 0, end: 6 },
+                { name: "Délelőtt", start: 6, end: 12 },
+                { name: "Délután", start: 12, end: 18 },
+                { name: "Este", start: 18, end: 24 }
+            ];
+
+            blocks.forEach(block => {
+                let blockTemps = [];
+                let startEpoch = midnightEpoch + (block.start * 3600);
+                let endEpoch = midnightEpoch + (block.end * 3600);
+                
+                // Csak azokat a blokkokat mutatjuk, amiknek a közepe még a jövőben van
+                if (endEpoch > nowEpoch) {
+                    hourlySources.forEach(source => {
+                        let pointsInBlock = source.hourly.filter(h => h.timeEpoch >= startEpoch && h.timeEpoch < endEpoch && h.temp !== null);
+                        if(pointsInBlock.length > 0) {
+                            let sourceAvg = pointsInBlock.reduce((a,b) => a + b.temp, 0) / pointsInBlock.length;
+                            blockTemps.push(sourceAvg);
+                        }
+                    });
+
+                    if (blockTemps.length > 0) {
+                        let avg = blockTemps.reduce((a,b) => a + b, 0) / blockTemps.length;
+                        dailyContainer.innerHTML += `
+                            <div class="block-card">
+                                <div class="block-name">${block.name} (${block.start}-${block.end})</div>
+                                <div class="block-temp">${avg.toFixed(1)}°C</div>
+                            </div>
+                        `;
+                    }
+                }
+            });
+            
+            // Ha a napból már nem maradt értelmes blokk (pl. este 11 van)
+            if(dailyContainer.innerHTML === '') { dailyContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#7f8c8d; font-size:0.9rem;">A mai napra már nincs adat.</div>'; }
+        }
+
         window.onload = () => { 
             const savedKey = localStorage.getItem(AUTH_KEY);
-            if (savedKey && unlockApp(savedKey)) {
-                unlockSuccess();
-            } else {
-                localStorage.removeItem(AUTH_KEY);
-                document.getElementById('screen-login').classList.add('active-screen');
-            }
+            if (savedKey && unlockApp(savedKey)) { unlockSuccess(); } 
+            else { localStorage.removeItem(AUTH_KEY); document.getElementById('screen-login').classList.add('active-screen'); }
         };
 
-        if ('serviceWorker' in navigator) { 
-            navigator.serviceWorker.register('sw.js'); 
-        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); 
-            deferredPrompt = e;
-            document.getElementById('install-panel').classList.add('visible');
+            e.preventDefault(); deferredPrompt = e; document.getElementById('install-panel').classList.add('visible');
         });
 
         async function pwaInstall() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('install-panel').classList.remove('visible');
-                }
+                if (outcome === 'accepted') { document.getElementById('install-panel').classList.remove('visible'); }
                 deferredPrompt = null;
             }
         }
@@ -655,11 +739,8 @@
         }
 
         function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err));
-            } else {
-                document.exitFullscreen();
-            }
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => console.log(err)); } 
+            else { document.exitFullscreen(); }
         }
     </script>
 </body>
