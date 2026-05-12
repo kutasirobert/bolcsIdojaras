@@ -340,13 +340,13 @@
         function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
         // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON ÉS SZÉLIRÁNY ---
-        function getWeatherEmoji(code, precip = 0) {
-            if (code === 0) return '☀️';
-            if (code === 1 || code === 2) return '⛅';
+        function getWeatherEmoji(code, precip = 0, isNight = false) {
+            if (code === 0) return isNight ? '🌙' : '☀️';
+            if (code === 1 || code === 2) return isNight ? '☁️' : '⛅';
             if (code === 3) return '☁️';
             if (code >= 45 && code <= 48) return '🌫️';
             if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-                if (precip < 1.5) return '🌦️';
+                if (precip < 1.5) return isNight ? '🌧️' : '🌦️';
                 return '🌧️';
             }
             if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️';
@@ -354,7 +354,7 @@
                 if (precip < 1.5) return '🌩️';
                 return '⛈️';
             }
-            return '🌤️';
+            return isNight ? '🌙' : '🌤️';
         }
 
         function getWindArrow(degree) {
@@ -368,7 +368,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v10";
+        const STORAGE_KEY = "weather_pwa_config_v11";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -738,6 +738,11 @@
             for (let i = 1; i <= 6; i++) {
                 let targetEpoch = currentHourEpoch + (i * 3600);
                 
+                // Idő alapú nappal/éjszaka detektálás
+                let hourDate = new Date(targetEpoch * 1000);
+                let currentH = hourDate.getHours();
+                let isNight = (currentH >= 18 || currentH < 6);
+
                 let hourTemps = [], hourPrecip = [], hourWindSpd = [], hourHum = [], hourCodes = [], hourUv = [];
                 let sumSin = 0, sumCos = 0, dirCount = 0;
                 let detailsText = `Eltérés az előrejelzésben:\\n\\n`;
@@ -781,7 +786,8 @@
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
-                    let emoji = getWeatherEmoji(modeCode, avgPrecip);
+                    // Itt átadjuk az éjszaka-változót!
+                    let emoji = getWeatherEmoji(modeCode, avgPrecip, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
                     let cardinalDir = getWindDirectionName(avgWindDir);
@@ -791,7 +797,7 @@
                         ? `<span class="forecast-alert" onclick="alert('${detailsText}')">⚠️</span>` 
                         : '';
                     
-                    let timeLabel = new Date(targetEpoch * 1000).getHours() + ":00";
+                    let timeLabel = currentH + ":00";
                     
                     hourlyContainer.innerHTML += `
                         <div class="forecast-card">
@@ -817,9 +823,9 @@
             d.setHours(0,0,0,0);
             let midnightEpoch = d.getTime() / 1000;
             
-            // Jelenlegi blokk meghatározása (0=Éjszaka, 1=Délelőtt, 2=Délután, 3=Este)
+            // Jelenlegi blokk meghatározása (0=Hajnal, 1=Délelőtt, 2=Délután, 3=Este)
             let blockIndex = Math.floor(currentHour / 6); 
-            const blockNames = ["Éjszaka", "Délelőtt", "Délután", "Este"];
+            const blockNames = ["Hajnal", "Délelőtt", "Délután", "Este"];
             
             let dynamicBlocks = [];
             for (let i = 0; i < 4; i++) {
@@ -834,13 +840,17 @@
                     timeLabel: `${startH}:00-${endH}:00`,
                     startEpoch: midnightEpoch + (dayOffset * 86400) + (startH * 3600),
                     endEpoch: midnightEpoch + (dayOffset * 86400) + (endH * 3600),
-                    duration: 6
+                    duration: 6,
+                    bIdx: bIdx // Eltároljuk, hogy melyik szakasz (a hold ikonokhoz)
                 });
             }
 
             dynamicBlocks.forEach(block => {
                 let hourTemps = [], hourPrecip = [], hourWindSpd = [], hourHum = [], hourCodes = [], hourUv = [];
                 let sumSin = 0, sumCos = 0, dirCount = 0;
+
+                // Ha Hajnal (0) vagy Este (3) van, akkor éjszaka van
+                let isNight = (block.bIdx === 0 || block.bIdx === 3);
 
                 hourlySources.forEach(source => {
                     let pointsInBlock = source.hourly.filter(h => h.timeEpoch >= block.startEpoch && h.timeEpoch < block.endEpoch && h.temp !== null);
@@ -878,12 +888,12 @@
                         modeCode = hourCodes.sort((a,b) => hourCodes.filter(v => v===a).length - hourCodes.filter(v => v===b).length).pop();
                     }
 
-                    // 6 órás esőcsepp érzékenység
                     let dropIcon = '💧';
                     if (blockPrecipTotal >= 3 && blockPrecipTotal < 10) dropIcon = '💧💧';
                     else if (blockPrecipTotal >= 10) dropIcon = '💧💧💧';
 
-                    let emoji = getWeatherEmoji(modeCode, avgPrecipPerHour);
+                    // A blokk is megkapja az isNight paramétert!
+                    let emoji = getWeatherEmoji(modeCode, avgPrecipPerHour, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
                     let cardinalDir = getWindDirectionName(avgWindDir);
