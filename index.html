@@ -296,7 +296,7 @@
         let appConfig = null;
         
         // --- IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT ---
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic="; 
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
         
         function xor(str, key) {
             let res = "";
@@ -337,7 +337,7 @@
         function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v4";
+        const STORAGE_KEY = "weather_pwa_config_v5";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -397,6 +397,7 @@
             if(currentData.length > 0) document.getElementById('details-modal').style.display = 'flex';
         }
         function closeDetailsModal() { document.getElementById('details-modal').style.display = 'none'; }
+        
         function showErrorModal(id) {
             let item = currentData.find(d => d.id === id);
             if(item) {
@@ -441,7 +442,7 @@
                 if (config.freeApis.omECMWF) promises.push(safeFetch('ECMWF Modell', () => fetchECMWF(lat, lon)));
                 if (config.freeApis.omICON) promises.push(safeFetch('Német ICON', () => fetchICON(lat, lon)));
                 
-                // Kulcsos Modellek (Csak aktuális pillanat)
+                // Kulcsos Modellek (Kibővítve előrejelző végpontokkal JS string varázslattal)
                 if (config.paidApis.openWeather) promises.push(safeFetch('OpenWeather', () => fetchOpenWeather(lat, lon, config.paidApis.openWeather)));
                 if (config.paidApis.weatherApi) {
                     let cleanApiCity = targetCity === "GPS Pozíció" ? `${lat},${lon}` : removeAccents(targetCity);
@@ -462,7 +463,6 @@
             let id = name.replace(/[^a-zA-Z]/g, '');
             try {
                 let result = await fetchFn();
-                // Ha a függvény objektumot ad vissza, akkor van benne 'temp' és 'hourly' is.
                 if (typeof result === 'object' && result.temp !== undefined) {
                     currentData.push({ id, source: name, temp: result.temp, hourly: result.hourly, error: null, excluded: false });
                 } else {
@@ -482,7 +482,6 @@
                 timeEpoch: new Date(t + "Z").getTime() / 1000,
                 temp: data.hourly.temperature_2m[i]
             }));
-            
             return { temp: data.current_weather.temperature, hourly: hourlyArray };
         }
 
@@ -496,7 +495,6 @@
                 timeEpoch: new Date(ts.time).getTime() / 1000,
                 temp: ts.data.instant.details.air_temperature
             }));
-
             return { temp: currentTemp, hourly: hourlyArray };
         }
 
@@ -514,7 +512,6 @@
 
             let nowEpoch = Math.floor(Date.now() / 1000);
             let closest = hourlyArray.reduce((prev, curr) => (Math.abs(curr.timeEpoch - nowEpoch) < Math.abs(prev.timeEpoch - nowEpoch) ? curr : prev));
-
             return { temp: closest.temp, hourly: hourlyArray };
         }
 
@@ -527,22 +524,47 @@
                 timeEpoch: new Date(t + "Z").getTime() / 1000,
                 temp: data.hourly.temperature_2m[i]
             }));
-            
             return { temp: data.current_weather.temperature, hourly: hourlyArray };
         }
 
+        // --- ÚJ LOGIKA: OpenWeather és WeatherAPI Előrejelzések behúzása a régi JSON struktúrával is! ---
         async function fetchOpenWeather(lat, lon, key) {
-            let res = await fetch(`${appConfig.endpoints.openWeather}?lat=${lat}&lon=${lon}&appid=${key}&units=metric`);
-            if (!res.ok) throw new Error(res.status === 401 ? "Érvénytelen Kulcs" : `Hiba: ${res.status}`);
-            let data = await res.json();
-            return data.main.temp;
+            // 1. Aktuális adat lekérése
+            let resCur = await fetch(`${appConfig.endpoints.openWeather}?lat=${lat}&lon=${lon}&appid=${key}&units=metric`);
+            if (!resCur.ok) throw new Error(resCur.status === 401 ? "Érvénytelen Kulcs" : `Hiba: ${resCur.status}`);
+            let dataCur = await resCur.json();
+
+            // 2. A 3 órás előrejelzés lekérése trükkösen: a /weather végpontot /forecast-ra cseréljük
+            let forecastEndpoint = appConfig.endpoints.openWeather.replace('/weather', '/forecast');
+            let resFor = await fetch(`${forecastEndpoint}?lat=${lat}&lon=${lon}&appid=${key}&units=metric`);
+            let hourlyArray = [];
+            
+            if (resFor.ok) {
+                let dataFor = await resFor.json();
+                hourlyArray = dataFor.list.map(item => ({
+                    timeEpoch: item.dt,
+                    temp: item.main.temp
+                }));
+            }
+            return { temp: dataCur.main.temp, hourly: hourlyArray };
         }
 
         async function fetchWeatherAPI(cityStr, key) {
-            let res = await fetch(`${appConfig.endpoints.weatherApi}?key=${key}&q=${cityStr}`);
+            // A WeatherAPI-nál a current.json végpontot forecast.json-re cseréljük. Ez visszaadja az aktuálist és a jövőt is!
+            let forecastEndpoint = appConfig.endpoints.weatherApi.replace('current.json', 'forecast.json');
+            let res = await fetch(`${forecastEndpoint}?key=${key}&q=${cityStr}&days=2&aqi=no&alerts=no`);
             if (!res.ok) throw new Error((res.status === 401 || res.status === 403) ? "Érvénytelen Kulcs" : `Hiba: ${res.status}`);
             let data = await res.json();
-            return data.current.temp_c;
+
+            let hourlyArray = [];
+            if (data.forecast && data.forecast.forecastday) {
+                data.forecast.forecastday.forEach(day => {
+                    day.hour.forEach(h => {
+                        hourlyArray.push({ timeEpoch: h.time_epoch, temp: h.temp_c });
+                    });
+                });
+            }
+            return { temp: data.current.temp_c, hourly: hourlyArray };
         }
 
         // --- RENDERELÉS ÉS FELDOLGOZÁS ---
@@ -555,25 +577,25 @@
             if (currentData.length === 0) return;
 
             let activeData = currentData.filter(d => !d.error && !d.excluded);
-            let totalCount = currentData.length;
+            let attemptedCount = currentData.length;
             let activeCount = activeData.length;
             
             let statusEl = document.getElementById('trust-indicator');
             let mainIcon = document.getElementById('main-icon');
             let mainContainer = document.getElementById('main-temp-btn');
             
-            // 1. Állapotjelző beállítása
-            if (activeCount >= 5) {
+            // 1. RELATÍV Állapotjelző beállítása (Csak a bekapcsolt forrásokat bünteti, ha hibásak)
+            if (activeCount === attemptedCount && activeCount > 0) {
                 statusEl.className = 'status-indicator status-green';
-                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás`;
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${attemptedCount} forrás`;
                 mainIcon.innerHTML = `<span style="color:var(--safe-green);">✅</span>`;
-            } else if (activeCount >= 3) {
+            } else if (activeCount >= Math.max(1, Math.floor(attemptedCount / 2))) {
                 statusEl.className = 'status-indicator status-yellow';
-                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás`;
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${attemptedCount} forrás (Figyelem)`;
                 mainIcon.innerHTML = `<span>⚠️</span>`;
             } else if (activeCount > 0) {
                 statusEl.className = 'status-indicator status-red';
-                statusEl.innerText = `Adatelemzés: ${activeCount}/${totalCount} forrás`;
+                statusEl.innerText = `Adatelemzés: ${activeCount}/${attemptedCount} forrás (Kritikus)`;
                 mainIcon.innerHTML = `<span>⚠️</span>`;
             } else {
                 statusEl.className = 'status-indicator status-red';
@@ -618,11 +640,12 @@
                 listEl.appendChild(li);
             });
 
-            // 4. ELŐREJELZÉS FELDOLGOZÁSA (Csak ha van órás adatunk)
+            // 4. ELŐREJELZÉS FELDOLGOZÁSA
             renderForecasts(activeData);
         }
 
         function renderForecasts(activeData) {
+            // Csak azokat a forrásokat engedjük be a jövőkutatásba, amik sikeresen letöltötték az órás adatokat
             let hourlySources = activeData.filter(d => d.hourly && d.hourly.length > 0);
             let hourlyContainer = document.getElementById('forecast-hourly-container');
             let dailyContainer = document.getElementById('forecast-blocks-container');
@@ -646,8 +669,8 @@
                 let hourTemps = [];
                 
                 hourlySources.forEach(source => {
-                    // Keresünk egy 30 percen belüli találatot a modell adataiban
-                    let point = source.hourly.find(h => Math.abs(h.timeEpoch - targetEpoch) < 1800);
+                    // Keresünk egy 30 percen belüli találatot. Így az OpenWeather (3 órás) csak akkor lép be, ha épp "óra-kompatibilis".
+                    let point = source.hourly.find(h => Math.abs(h.timeEpoch - targetEpoch) <= 1800);
                     if (point && point.temp !== null) hourTemps.push(point.temp);
                 });
 
