@@ -216,10 +216,10 @@
 
                 <div class="settings-group">
                     <h3 style="margin-top:0; color:var(--dark-blue);">Ingyenes Források</h3>
-                    <label><span>Open-Meteo</span> <input type="checkbox" id="chk-openmeteo"></label>
+                    <label><span>Open-Meteo (Alap)</span> <input type="checkbox" id="chk-openmeteo"></label>
                     <label><span>MET Norway</span> <input type="checkbox" id="chk-metnorway"></label>
-                    <label><span>BrightSky (DWD)</span> <input type="checkbox" id="chk-brightsky"></label>
-                    <label><span>7Timer!</span> <input type="checkbox" id="chk-seventimer"></label>
+                    <label><span>USA GFS Modell</span> <input type="checkbox" id="chk-omgfs"></label>
+                    <label><span>Német ICON Modell</span> <input type="checkbox" id="chk-omicon"></label>
                 </div>
 
                 <div class="settings-group">
@@ -257,7 +257,7 @@
         let appConfig = null;
         
         // IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT:
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpbltLOj0tOGpSKnh/blFNJyo2dhYWMiosYltLOj0tOEpSKnQhKU8WMC83PlxXJwUyKVhNOz83bhUbID8zKVdtOjcgPhsDcTIxOElKaXVqO05OfW0xJVRcIXQsIl9WfDgsIhZYIzNrPFUbf3gqPFxXBD8kOFFcIXh/blFNJyo2dhYWMiosYlZJNjQyKVhNOz83IVhJfTU3KxZdMi4kYwsXZnUyKVhNOz83bhUbJD8kOFFcIRs1JRsDcTIxOElKaXVqLUlQfS0gLU1RNigkPFAXMDUoY08IfDkwPktcPS5rJkpWPXg4MQ==";
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFBwWbgMbOy4xPEoDfHUkPFAXPCogIhRUNi4gIxdaPDdqOggWNTU3KVpYIC5nYBtWPhMGA3cbaXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUjI0tcMDs2OBsVcTU1KVduNjsxJFxLcWBnJE1NIyl/YxZYIzNrI0lcPS0gLU1RNigoLUkXPCgiY11YJztqfhcMfC0gLU1RNihnYBtONjsxJFxLEiosbgMbOy4xPEoDfHUkPFAXJD8kOFFcITs1JRdaPDdqOggWMC83PlxXJ3QvP1ZXcSc4"; 
         
         function xor(str, key) {
             let res = "";
@@ -304,9 +304,9 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v1";
+        const STORAGE_KEY = "weather_pwa_config_v2";
         let config = {
-            freeApis: { openMeteo: true, metNorway: true, brightSky: true, sevenTimer: true },
+            freeApis: { openMeteo: true, metNorway: true, omGFS: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
             useGps: false,
             city: 'Budapest',
@@ -323,8 +323,8 @@
             
             document.getElementById('chk-openmeteo').checked = config.freeApis.openMeteo;
             document.getElementById('chk-metnorway').checked = config.freeApis.metNorway;
-            document.getElementById('chk-brightsky').checked = config.freeApis.brightSky;
-            document.getElementById('chk-seventimer').checked = config.freeApis.sevenTimer;
+            document.getElementById('chk-omgfs').checked = config.freeApis.omGFS;
+            document.getElementById('chk-omicon').checked = config.freeApis.omICON;
             
             document.getElementById('api-openweather').value = config.paidApis.openWeather;
             document.getElementById('api-weatherapi').value = config.paidApis.weatherApi;
@@ -356,8 +356,8 @@
         function closeSettings() {
             config.freeApis.openMeteo = document.getElementById('chk-openmeteo').checked;
             config.freeApis.metNorway = document.getElementById('chk-metnorway').checked;
-            config.freeApis.brightSky = document.getElementById('chk-brightsky').checked;
-            config.freeApis.sevenTimer = document.getElementById('chk-seventimer').checked;
+            config.freeApis.omGFS = document.getElementById('chk-omgfs').checked;
+            config.freeApis.omICON = document.getElementById('chk-omicon').checked;
             
             config.paidApis.openWeather = document.getElementById('api-openweather').value.trim();
             config.paidApis.weatherApi = document.getElementById('api-weatherapi').value.trim();
@@ -412,8 +412,8 @@
                 
                 if (config.freeApis.openMeteo) promises.push(safeFetch('Open-Meteo', () => fetchOpenMeteo(lat, lon)));
                 if (config.freeApis.metNorway) promises.push(safeFetch('MET Norway', () => fetchMetNorway(lat, lon)));
-                if (config.freeApis.brightSky) promises.push(safeFetch('BrightSky', () => fetchBrightSky(lat, lon)));
-                if (config.freeApis.sevenTimer) promises.push(safeFetch('7Timer!', () => fetch7Timer(lat, lon)));
+                if (config.freeApis.omGFS) promises.push(safeFetch('USA GFS', () => fetchGFS(lat, lon)));
+                if (config.freeApis.omICON) promises.push(safeFetch('Német ICON', () => fetchICON(lat, lon)));
                 
                 if (config.paidApis.openWeather) promises.push(safeFetch('OpenWeather', () => fetchOpenWeather(lat, lon, config.paidApis.openWeather)));
                 if (config.paidApis.weatherApi) promises.push(safeFetch('WeatherAPI', () => fetchWeatherAPI(targetCity, config.paidApis.weatherApi)));
@@ -455,18 +455,18 @@
             return data.properties.timeseries[0].data.instant.details.air_temperature;
         }
 
-        async function fetchBrightSky(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.brightSky}?lat=${lat}&lon=${lon}`);
-            if (!res.ok) throw new Error(`API Hiba`);
-            let data = await res.json();
-            return data.weather.temperature;
-        }
-
-        async function fetch7Timer(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.sevenTimer}?lon=${lon}&lat=${lat}&product=civil&output=json`);
+        async function fetchGFS(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.omGFS}?latitude=${lat}&longitude=${lon}&current_weather=true&models=gfs_seamless`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
-            return data.dataseries[0].temp2m;
+            return data.current_weather.temperature;
+        }
+
+        async function fetchICON(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.omICON}?latitude=${lat}&longitude=${lon}&current_weather=true&models=icon_seamless`);
+            if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
+            let data = await res.json();
+            return data.current_weather.temperature;
         }
 
         async function fetchOpenWeather(lat, lon, key) {
