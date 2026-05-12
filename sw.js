@@ -9,6 +9,7 @@ const ASSETS = [
   './icon-512.png',
   './apple-touch-icon.png',
   './background.jpg'
+  './dictionary.js'
 ];
 
 // Telepítés: fájlok mentése a cache-be
