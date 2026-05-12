@@ -644,7 +644,7 @@
             renderForecasts(activeData);
         }
 
-        function renderForecasts(activeData) {
+		function renderForecasts(activeData) {
             // Csak azokat a forrásokat engedjük be a jövőkutatásba, amik sikeresen letöltötték az órás adatokat
             let hourlySources = activeData.filter(d => d.hourly && d.hourly.length > 0);
             let hourlyContainer = document.getElementById('forecast-hourly-container');
@@ -668,16 +668,26 @@
                 let targetEpoch = currentHourEpoch + (i * 3600);
                 let hourTemps = [];
                 
+                // Készítünk egy részletes szöveget a kattintáshoz
+                let detailsText = `Eltérés az előrejelzésben:\\n\\n`;
+                
                 hourlySources.forEach(source => {
-                    // Keresünk egy 30 percen belüli találatot. Így az OpenWeather (3 órás) csak akkor lép be, ha épp "óra-kompatibilis".
+                    // Keresünk egy 30 percen belüli találatot.
                     let point = source.hourly.find(h => Math.abs(h.timeEpoch - targetEpoch) <= 1800);
-                    if (point && point.temp !== null) hourTemps.push(point.temp);
+                    if (point && point.temp !== null) {
+                        hourTemps.push(point.temp);
+                        detailsText += `• ${source.source}: ${point.temp.toFixed(1)}°C\\n`;
+                    }
                 });
 
                 if (hourTemps.length > 0) {
                     let avg = hourTemps.reduce((a, b) => a + b, 0) / hourTemps.length;
                     let diff = Math.max(...hourTemps) - Math.min(...hourTemps);
-                    let alertIcon = (hourTemps.length > 1 && diff > config.threshold) ? `<span class="forecast-alert">⚠️</span>` : '';
+                    
+                    // Itt a varázslat: ha nagy a diff, a ⚠️ ikon kap egy onclick alertet a részletes szöveggel!
+                    let alertIcon = (hourTemps.length > 1 && diff > config.threshold) 
+                        ? `<span class="forecast-alert" style="cursor:pointer; font-size:1rem;" onclick="alert('${detailsText}')">⚠️</span>` 
+                        : '';
                     
                     let timeLabel = new Date(targetEpoch * 1000).getHours() + ":00";
                     
@@ -730,7 +740,6 @@
                 }
             });
             
-            // Ha a napból már nem maradt értelmes blokk (pl. este 11 van)
             if(dailyContainer.innerHTML === '') { dailyContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#7f8c8d; font-size:0.9rem;">A mai napra már nincs adat.</div>'; }
         }
 
