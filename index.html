@@ -15,7 +15,6 @@
     <meta name="apple-mobile-web-app-title" content="Bölcs Időjárás">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-    <!-- Behúzzuk a rejtélyes fordítószótárat -->
     <script src="dictionary.js"></script>
 
     <style>
@@ -125,10 +124,7 @@
         .fc-detail { font-size: 0.75rem; color: #555; font-weight: bold; white-space: nowrap; line-height: 1.2;}
         .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
 
-        .blocks-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1vh; }
-        .block-card { background: rgba(0,0,0,0.04); padding: 1vh; border-radius: 1vh; text-align: center; }
-        .block-name { font-size: 0.85rem; color: #7f8c8d; font-weight: bold;}
-        .block-temp { font-size: 1.3rem; color: var(--dark-blue); font-weight: 900; margin-top: 0.2vh;}
+        .blocks-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1vh; }
 
         /* Modalok */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
@@ -234,7 +230,7 @@
                     </div>
                 </div>
 
-                <!-- Napi Blokkok -->
+                <!-- Napi 3 Részletes Blokk -->
                 <div class="forecast-section" id="forecast-daily-section" style="display: none; border-top:none; padding-top:0;">
                     <div class="forecast-title" style="margin-top: 1vh;">Mai Nap Áttekintése</div>
                     <div class="blocks-container" id="forecast-blocks-container">
@@ -303,7 +299,7 @@
         let appConfig = null;
         
         // --- IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT BASE64 KÓDOT ---
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic="; 
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
         
         function xor(str, key) {
             let res = "";
@@ -349,16 +345,14 @@
             if (code === 1 || code === 2) return '⛅';
             if (code === 3) return '☁️';
             if (code >= 45 && code <= 48) return '🌫️';
-            
-            // Eső logikája (Mennyiség alapú ikon felülbírálás)
             if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-                if (precip < 1.5) return '🌦️'; // Kisebb zápor, kevesebb cseppel
-                return '🌧️'; // Sima eső
+                if (precip < 1.5) return '🌦️';
+                return '🌧️';
             }
             if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️';
             if (code >= 95) {
-                if (precip < 1.5) return '🌩️'; // Csak villámlás
-                return '⛈️'; // Komoly vihar esővel
+                if (precip < 1.5) return '🌩️';
+                return '⛈️';
             }
             return '🌤️';
         }
@@ -787,7 +781,6 @@
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
-                    // Itt adjuk át az átlagos esőmennyiséget is a fő ikon kiderítéséhez!
                     let emoji = getWeatherEmoji(modeCode, avgPrecip);
                     
                     let arrow = getWindArrow(avgWindDir);
@@ -816,45 +809,91 @@
                 }
             }
 
-            // --- Mai Nap Blokkok ---
+            // --- Napi 3 Blokk (0-8, 8-16, 16-24) FELDOLGOZÁSA ---
             dailyContainer.innerHTML = '';
             let d = new Date(); d.setHours(0,0,0,0);
             let midnightEpoch = d.getTime() / 1000;
             
             const blocks = [
-                { name: "Éjszaka", start: 0, end: 6 },
-                { name: "Délelőtt", start: 6, end: 12 },
-                { name: "Délután", start: 12, end: 18 },
-                { name: "Este", start: 18, end: 24 }
+                { name: "0-8h (Éjjel)", start: 0, end: 8 },
+                { name: "8-16h (Nappal)", start: 8, end: 16 },
+                { name: "16-24h (Este)", start: 16, end: 24 }
             ];
 
             blocks.forEach(block => {
-                let blockTemps = [];
                 let startEpoch = midnightEpoch + (block.start * 3600);
                 let endEpoch = midnightEpoch + (block.end * 3600);
                 
+                let hourTemps = [], hourPrecip = [], hourWindSpd = [], hourHum = [], hourCodes = [], hourUv = [];
+                let sumSin = 0, sumCos = 0, dirCount = 0;
+
+                // Csak akkor mutatjuk a blokkot, ha még nem telt el teljesen (a vége a jövőben van)
                 if (endEpoch > nowEpoch) {
                     hourlySources.forEach(source => {
                         let pointsInBlock = source.hourly.filter(h => h.timeEpoch >= startEpoch && h.timeEpoch < endEpoch && h.temp !== null);
-                        if(pointsInBlock.length > 0) {
-                            let sourceAvg = pointsInBlock.reduce((a,b) => a + b.temp, 0) / pointsInBlock.length;
-                            blockTemps.push(sourceAvg);
-                        }
+                        
+                        pointsInBlock.forEach(point => {
+                            hourTemps.push(point.temp);
+                            if (point.precip !== undefined) hourPrecip.push(point.precip);
+                            if (point.windSpd !== undefined) hourWindSpd.push(point.windSpd);
+                            if (point.humidity !== undefined) hourHum.push(point.humidity);
+                            if (point.code !== undefined) hourCodes.push(point.code);
+                            if (point.uv !== undefined && point.uv !== null) hourUv.push(point.uv);
+                            if (point.windDir !== undefined) {
+                                let rad = point.windDir * Math.PI / 180;
+                                sumSin += Math.sin(rad); sumCos += Math.cos(rad);
+                                dirCount++;
+                            }
+                        });
                     });
 
-                    if (blockTemps.length > 0) {
-                        let avg = blockTemps.reduce((a,b) => a + b, 0) / blockTemps.length;
+                    if (hourTemps.length > 0) {
+                        let avgTemp = hourTemps.reduce((a, b) => a + b, 0) / hourTemps.length;
+                        
+                        // Kiszámoljuk az átlagos óránkénti csapadékot, majd beszorozzuk a blokk hosszával (8 óra)
+                        let avgPrecipPerHour = hourPrecip.length ? (hourPrecip.reduce((a,b)=>a+b,0)/hourPrecip.length) : 0;
+                        let blockPrecipTotal = avgPrecipPerHour * (block.end - block.start);
+                        
+                        let avgWindSpd = hourWindSpd.length ? (hourWindSpd.reduce((a,b)=>a+b,0)/hourWindSpd.length) : 0;
+                        let avgHum = hourHum.length ? (hourHum.reduce((a,b)=>a+b,0)/hourHum.length) : 0;
+                        let uvText = hourUv.length ? (hourUv.reduce((a,b)=>a+b,0)/hourUv.length).toFixed(1) : '--';
+                        
+                        let avgWindDir = 0;
+                        if (dirCount > 0) { avgWindDir = (Math.atan2(sumSin, sumCos) * 180 / Math.PI + 360) % 360; }
+                        
+                        let modeCode = 0; 
+                        if (hourCodes.length > 0) {
+                            modeCode = hourCodes.sort((a,b) => hourCodes.filter(v => v===a).length - hourCodes.filter(v => v===b).length).pop();
+                        }
+
+                        // 8 órás szakasz esőcsepp érzékenysége (kb 8x annyi eső hullik mint 1 óra alatt)
+                        let dropIcon = '💧';
+                        if (blockPrecipTotal >= 4 && blockPrecipTotal < 15) dropIcon = '💧💧';
+                        else if (blockPrecipTotal >= 15) dropIcon = '💧💧💧';
+
+                        // Fő ikon logikája marad az átlagos óránkénti intenzitáson
+                        let emoji = getWeatherEmoji(modeCode, avgPrecipPerHour);
+                        
+                        let arrow = getWindArrow(avgWindDir);
+                        let cardinalDir = getWindDirectionName(avgWindDir);
+
                         dailyContainer.innerHTML += `
-                            <div class="block-card">
-                                <div class="block-name">${block.name} (${block.start}-${block.end})</div>
-                                <div class="block-temp">${avg.toFixed(1)}°C</div>
+                            <div class="forecast-card" style="width:100%; box-sizing:border-box;">
+                                <div class="forecast-time">${block.name}</div>
+                                <div class="fc-icon">${emoji}</div>
+                                <div class="fc-temp">${avgTemp.toFixed(1)}°</div>
+                                <div class="fc-detail">${dropIcon} ${blockPrecipTotal.toFixed(1)} mm</div>
+                                <div class="fc-detail">💨 ${Math.round(avgWindSpd)} km/h</div>
+                                <div class="fc-detail">🧭 ${arrow} ${cardinalDir}</div>
+                                <div class="fc-detail">💦 ${Math.round(avgHum)}%</div>
+                                <div class="fc-detail">☀️ UV: ${uvText}</div>
                             </div>
                         `;
                     }
                 }
             });
             
-            if(dailyContainer.innerHTML === '') { dailyContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#7f8c8d; font-size:0.9rem;">A mai napra már nincs adat.</div>'; }
+            if(dailyContainer.innerHTML === '') { dailyContainer.innerHTML = '<div style="grid-column: span 3; text-align:center; color:#7f8c8d; font-size:0.9rem;">A mai napra már nincs adat.</div>'; }
         }
 
         window.onload = () => { 
