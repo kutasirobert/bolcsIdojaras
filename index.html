@@ -115,14 +115,14 @@
         .forecast-row::-webkit-scrollbar { display: none; }
         
         .forecast-card { 
-            background: rgba(0,0,0,0.04); padding: 1.5vh 1vh; border-radius: 1.5vh; min-width: 75px; 
+            background: rgba(0,0,0,0.04); padding: 1.5vh 1vh; border-radius: 1.5vh; min-width: 85px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5vh; text-align: center;
             position: relative;
         }
         .forecast-time { font-size: 0.85rem; color: #7f8c8d; font-weight: bold;}
         .fc-icon { font-size: 1.8rem; line-height: 1;}
         .fc-temp { font-size: 1.2rem; color: var(--dark-blue); font-weight: 900; }
-        .fc-detail { font-size: 0.75rem; color: #555; font-weight: bold; white-space: nowrap; line-height: 1.1;}
+        .fc-detail { font-size: 0.75rem; color: #555; font-weight: bold; white-space: nowrap; line-height: 1.2;}
         .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
 
         .blocks-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1vh; }
@@ -299,7 +299,7 @@
 
     <script>
         // --- BIZTONSÁG ÉS ZSILIP RENDSZER ---
-        const AUTH_KEY = "idojaras_auth_v4";
+        const AUTH_KEY = "idojaras_auth_v5";
         let appConfig = null;
         
         // --- IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT BASE64 KÓDOT ---
@@ -361,7 +361,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v7";
+        const STORAGE_KEY = "weather_pwa_config_v8";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -460,13 +460,11 @@
                 
                 let promises = [];
                 
-                // Nyílt Modellek
                 if (config.freeApis.openMeteo) promises.push(safeFetch('Open-Meteo', () => fetchOpenMeteo(lat, lon)));
                 if (config.freeApis.metNorway) promises.push(safeFetch('MET Norway', () => fetchMetNorway(lat, lon)));
                 if (config.freeApis.omECMWF) promises.push(safeFetch('ECMWF Modell', () => fetchECMWF(lat, lon)));
                 if (config.freeApis.omICON) promises.push(safeFetch('Német ICON', () => fetchICON(lat, lon)));
                 
-                // Kulcsos Modellek
                 if (config.paidApis.openWeather) promises.push(safeFetch('OpenWeather', () => fetchOpenWeather(lat, lon, config.paidApis.openWeather)));
                 if (config.paidApis.weatherApi) {
                     let cleanApiCity = targetCity === "GPS Pozíció" ? `${lat},${lon}` : removeAccents(targetCity);
@@ -497,7 +495,8 @@
             }
         }
 
-        let extParams = "temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode,relative_humidity_2m";
+        // Bővített paraméterek, beleértve az UV indexet is!
+        let extParams = "temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode,relative_humidity_2m,uv_index";
 
         async function fetchOpenMeteo(lat, lon) {
             let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${extParams}&forecast_days=2`);
@@ -511,7 +510,8 @@
                 windSpd: data.hourly.windspeed_10m[i],
                 windDir: data.hourly.winddirection_10m[i],
                 code: data.hourly.weathercode[i],
-                humidity: data.hourly.relative_humidity_2m[i]
+                humidity: data.hourly.relative_humidity_2m[i],
+                uv: data.hourly.uv_index ? data.hourly.uv_index[i] : null
             }));
             return { temp: data.current_weather.temperature, hourly: hourlyArray };
         }
@@ -529,7 +529,8 @@
                 windSpd: data.hourly.windspeed_10m[i],
                 windDir: data.hourly.winddirection_10m[i],
                 code: data.hourly.weathercode[i],
-                humidity: data.hourly.relative_humidity_2m[i]
+                humidity: data.hourly.relative_humidity_2m[i],
+                uv: data.hourly.uv_index ? data.hourly.uv_index[i] : null
             }));
 
             let nowEpoch = Math.floor(Date.now() / 1000);
@@ -549,12 +550,12 @@
                 windSpd: data.hourly.windspeed_10m[i],
                 windDir: data.hourly.winddirection_10m[i],
                 code: data.hourly.weathercode[i],
-                humidity: data.hourly.relative_humidity_2m[i]
+                humidity: data.hourly.relative_humidity_2m[i],
+                uv: data.hourly.uv_index ? data.hourly.uv_index[i] : null
             }));
             return { temp: data.current_weather.temperature, hourly: hourlyArray };
         }
 
-        // MET Norway, OpenWeather, WeatherAPI adatok behúzása a Szótár segítségével
         async function fetchMetNorway(lat, lon) {
             let res = await fetch(`${appConfig.endpoints.metNorway}?lat=${lat}&lon=${lon}`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
@@ -563,16 +564,17 @@
             let currentTemp = data.properties.timeseries[0].data.instant.details.air_temperature;
             let hourlyArray = data.properties.timeseries.map(ts => {
                 let next1 = ts.data.next_1_hours || {};
-                let sym = next1.summary ? next1.summary.symbol_code.split('_')[0] : null; // levágjuk a _day vagy _night részt ha van
+                let sym = next1.summary ? next1.summary.symbol_code.split('_')[0] : null;
                 let code = sym && typeof WMO_MAP !== 'undefined' && WMO_MAP.MN[sym] !== undefined ? WMO_MAP.MN[sym] : 3;
                 return {
                     timeEpoch: new Date(ts.time).getTime() / 1000,
                     temp: ts.data.instant.details.air_temperature,
                     precip: next1.details ? next1.details.precipitation_amount : 0,
-                    windSpd: (ts.data.instant.details.wind_speed || 0) * 3.6, // m/s to km/h
+                    windSpd: (ts.data.instant.details.wind_speed || 0) * 3.6, 
                     windDir: ts.data.instant.details.wind_from_direction || 0,
                     humidity: ts.data.instant.details.relative_humidity || 0,
-                    code: code
+                    code: code,
+                    uv: null // A MET Norway nem ad UV indexet a szabad hozzáférésben
                 };
             });
             return { temp: currentTemp, hourly: hourlyArray };
@@ -595,11 +597,12 @@
                     return { 
                         timeEpoch: item.dt, 
                         temp: item.main.temp,
-                        precip: item.rain && item.rain['3h'] ? item.rain['3h'] / 3 : 0, // 3 órás összegből órás átlag
-                        windSpd: (item.wind.speed || 0) * 3.6, // m/s to km/h
+                        precip: item.rain && item.rain['3h'] ? item.rain['3h'] / 3 : 0,
+                        windSpd: (item.wind.speed || 0) * 3.6, 
                         windDir: item.wind.deg || 0,
                         humidity: item.main.humidity || 0,
-                        code: code
+                        code: code,
+                        uv: null // Ingyenes OpenWeather /forecast API-n nincs UV
                     };
                 });
             }
@@ -625,7 +628,8 @@
                             windSpd: h.wind_kph || 0,
                             windDir: h.wind_degree || 0,
                             humidity: h.humidity || 0,
-                            code: code
+                            code: code,
+                            uv: h.uv // A WeatherAPI csodálatosan tud UV-t!
                         }); 
                     });
                 });
@@ -723,12 +727,12 @@
             let nowEpoch = Math.floor(Date.now() / 1000);
             let currentHourEpoch = nowEpoch - (nowEpoch % 3600); 
             
-            // --- KÖVETKEZŐ 6 ÓRA FELDOLGOZÁSA (Minden forrás játszik!) ---
+            // --- KÖVETKEZŐ 6 ÓRA FELDOLGOZÁSA ---
             hourlyContainer.innerHTML = '';
             for (let i = 1; i <= 6; i++) {
                 let targetEpoch = currentHourEpoch + (i * 3600);
                 
-                let hourTemps = [], hourPrecip = [], hourWindSpd = [], hourHum = [], hourCodes = [];
+                let hourTemps = [], hourPrecip = [], hourWindSpd = [], hourHum = [], hourCodes = [], hourUv = [];
                 let sumSin = 0, sumCos = 0, dirCount = 0;
                 let detailsText = `Eltérés az előrejelzésben:\\n\\n`;
                 
@@ -742,6 +746,8 @@
                         if (point.windSpd !== undefined) hourWindSpd.push(point.windSpd);
                         if (point.humidity !== undefined) hourHum.push(point.humidity);
                         if (point.code !== undefined) hourCodes.push(point.code);
+                        if (point.uv !== undefined && point.uv !== null) hourUv.push(point.uv);
+
                         if (point.windDir !== undefined) {
                             let rad = point.windDir * Math.PI / 180;
                             sumSin += Math.sin(rad); sumCos += Math.cos(rad);
@@ -755,6 +761,7 @@
                     let avgPrecip = hourPrecip.length ? (hourPrecip.reduce((a,b)=>a+b,0)/hourPrecip.length) : 0;
                     let avgWindSpd = hourWindSpd.length ? (hourWindSpd.reduce((a,b)=>a+b,0)/hourWindSpd.length) : 0;
                     let avgHum = hourHum.length ? (hourHum.reduce((a,b)=>a+b,0)/hourHum.length) : 0;
+                    let uvText = hourUv.length ? (hourUv.reduce((a,b)=>a+b,0)/hourUv.length).toFixed(1) : '--';
                     
                     let avgWindDir = 0;
                     if (dirCount > 0) { avgWindDir = (Math.atan2(sumSin, sumCos) * 180 / Math.PI + 360) % 360; }
@@ -763,6 +770,11 @@
                     if (hourCodes.length > 0) {
                         modeCode = hourCodes.sort((a,b) => hourCodes.filter(v => v===a).length - hourCodes.filter(v => v===b).length).pop();
                     }
+
+                    // Dinamikus Esőcseppek logikája
+                    let dropIcon = '💧';
+                    if (avgPrecip > 2 && avgPrecip <= 5) dropIcon = '💧💧';
+                    else if (avgPrecip > 5) dropIcon = '💧💧💧';
 
                     let emoji = getWeatherEmoji(modeCode);
                     let arrow = getWindArrow(avgWindDir);
@@ -780,9 +792,11 @@
                             <div class="forecast-time">${timeLabel}</div>
                             <div class="fc-icon">${emoji}</div>
                             <div class="fc-temp">${avgTemp.toFixed(1)}°</div>
-                            <div class="fc-detail">💧 ${avgPrecip.toFixed(1)}mm</div>
-                            <div class="fc-detail">💨 ${arrow} ${Math.round(avgWindSpd)}</div>
+                            <div class="fc-detail">${dropIcon} ${avgPrecip.toFixed(1)} mm</div>
+                            <div class="fc-detail">🧭 ${arrow} ${Math.round(avgWindDir)}°</div>
+                            <div class="fc-detail">💨 ${Math.round(avgWindSpd)} km/h</div>
                             <div class="fc-detail">💦 ${Math.round(avgHum)}%</div>
+                            <div class="fc-detail">☀️ UV: ${uvText}</div>
                         </div>
                     `;
                 }
