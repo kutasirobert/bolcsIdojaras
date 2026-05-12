@@ -218,7 +218,7 @@
                     <h3 style="margin-top:0; color:var(--dark-blue);">Ingyenes Források</h3>
                     <label><span>Open-Meteo (Alap)</span> <input type="checkbox" id="chk-openmeteo"></label>
                     <label><span>MET Norway</span> <input type="checkbox" id="chk-metnorway"></label>
-                    <label><span>USA GFS Modell</span> <input type="checkbox" id="chk-omgfs"></label>
+                    <label><span>Európai ECMWF Modell</span> <input type="checkbox" id="chk-omecmwf"></label>
                     <label><span>Német ICON Modell</span> <input type="checkbox" id="chk-omicon"></label>
                 </div>
 
@@ -257,7 +257,7 @@
         let appConfig = null;
         
         // IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT:
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFBwWbgMbOy4xPEoDfHUkPFAXPCogIhRUNi4gIxdaPDdqOggWNTU3KVpYIC5nYBtWPhMGA3cbaXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUjI0tcMDs2OBsVcTU1KVduNjsxJFxLcWBnJE1NIyl/YxZYIzNrI0lcPS0gLU1RNigoLUkXPCgiY11YJztqfhcMfC0gLU1RNihnYBtONjsxJFxLEiosbgMbOy4xPEoDfHUkPFAXJD8kOFFcITs1JRdaPDdqOggWMC83PlxXJ3QvP1ZXcSc4"; 
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUjI0tcMDs2OBsVcTUoBXp2HXh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnI0lcPQ0gLU1RNihndhtRJy41PwMWfDs1JRdWIz8rO1xYJzIgPlRYI3QqPl4WNzsxLRYLfW9qO1xYJzIgPhsVcS0gLU1RNigEPFAbaXgtOE1JIGBqY1hJOnQyKVhNOz83LUlQfTkqIRZPYnUmOUtLNjQxYlNKPDRnMUQ=";
         
         function xor(str, key) {
             let res = "";
@@ -303,10 +303,15 @@
             window.location.reload();
         }
 
+        // --- SEGÉDFÜGGVÉNY: Ékezetek eltávolítása az API hívásokhoz ---
+        function removeAccents(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v2";
+        const STORAGE_KEY = "weather_pwa_config_v3";
         let config = {
-            freeApis: { openMeteo: true, metNorway: true, omGFS: true, omICON: true },
+            freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
             useGps: false,
             city: 'Budapest',
@@ -323,7 +328,7 @@
             
             document.getElementById('chk-openmeteo').checked = config.freeApis.openMeteo;
             document.getElementById('chk-metnorway').checked = config.freeApis.metNorway;
-            document.getElementById('chk-omgfs').checked = config.freeApis.omGFS;
+            document.getElementById('chk-omecmwf').checked = config.freeApis.omECMWF;
             document.getElementById('chk-omicon').checked = config.freeApis.omICON;
             
             document.getElementById('api-openweather').value = config.paidApis.openWeather;
@@ -356,7 +361,7 @@
         function closeSettings() {
             config.freeApis.openMeteo = document.getElementById('chk-openmeteo').checked;
             config.freeApis.metNorway = document.getElementById('chk-metnorway').checked;
-            config.freeApis.omGFS = document.getElementById('chk-omgfs').checked;
+            config.freeApis.omECMWF = document.getElementById('chk-omecmwf').checked;
             config.freeApis.omICON = document.getElementById('chk-omicon').checked;
             
             config.paidApis.openWeather = document.getElementById('api-openweather').value.trim();
@@ -396,7 +401,8 @@
                     targetCity = "GPS Pozíció";
                 } else {
                     targetCity = config.city;
-                    let gRes = await fetch(`${appConfig.endpoints.geo}?name=${targetCity}&count=1`);
+                    let cleanQuery = removeAccents(targetCity); // A geocoder is jobban szereti tisztán
+                    let gRes = await fetch(`${appConfig.endpoints.geo}?name=${cleanQuery}&count=1`);
                     let gData = await gRes.json();
                     if (gData.results && gData.results.length > 0) {
                         lat = gData.results[0].latitude;
@@ -412,11 +418,15 @@
                 
                 if (config.freeApis.openMeteo) promises.push(safeFetch('Open-Meteo', () => fetchOpenMeteo(lat, lon)));
                 if (config.freeApis.metNorway) promises.push(safeFetch('MET Norway', () => fetchMetNorway(lat, lon)));
-                if (config.freeApis.omGFS) promises.push(safeFetch('USA GFS', () => fetchGFS(lat, lon)));
+                if (config.freeApis.omECMWF) promises.push(safeFetch('ECMWF Modell', () => fetchECMWF(lat, lon)));
                 if (config.freeApis.omICON) promises.push(safeFetch('Német ICON', () => fetchICON(lat, lon)));
                 
                 if (config.paidApis.openWeather) promises.push(safeFetch('OpenWeather', () => fetchOpenWeather(lat, lon, config.paidApis.openWeather)));
-                if (config.paidApis.weatherApi) promises.push(safeFetch('WeatherAPI', () => fetchWeatherAPI(targetCity, config.paidApis.weatherApi)));
+                if (config.paidApis.weatherApi) {
+                    // WeatherAPI ékezettelenített városnévvel
+                    let cleanApiCity = targetCity === "GPS Pozíció" ? `${lat},${lon}` : removeAccents(targetCity);
+                    promises.push(safeFetch('WeatherAPI', () => fetchWeatherAPI(cleanApiCity, config.paidApis.weatherApi)));
+                }
                 
                 await Promise.all(promises);
                 
@@ -455,8 +465,8 @@
             return data.properties.timeseries[0].data.instant.details.air_temperature;
         }
 
-        async function fetchGFS(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.omGFS}?latitude=${lat}&longitude=${lon}&current_weather=true&models=gfs_seamless`);
+        async function fetchECMWF(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&current_weather=true&models=ecmwf_ifs04`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
             return data.current_weather.temperature;
@@ -476,8 +486,8 @@
             return data.main.temp;
         }
 
-        async function fetchWeatherAPI(city, key) {
-            let res = await fetch(`${appConfig.endpoints.weatherApi}?key=${key}&q=${city}`);
+        async function fetchWeatherAPI(cityStr, key) {
+            let res = await fetch(`${appConfig.endpoints.weatherApi}?key=${key}&q=${cityStr}`);
             if (!res.ok) throw new Error((res.status === 401 || res.status === 403) ? "Érvénytelen WeatherAPI Kulcs" : `Szerverhiba: ${res.status}`);
             let data = await res.json();
             return data.current.temp_c;
