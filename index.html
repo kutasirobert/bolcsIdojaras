@@ -257,8 +257,8 @@
         let appConfig = null;
         
         // IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT KÓDOT:
-		const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
-       
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
+        
         function xor(str, key) {
             let res = "";
             for (let i = 0; i < str.length; i++) {
@@ -465,11 +465,15 @@
             return data.properties.timeseries[0].data.instant.details.air_temperature;
         }
 
-		async function fetchECMWF(lat, lon) {
-            // Az ECMWF a precízebb 'current=temperature_2m' paramétert és struktúrát igényli
-            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&current=temperature_2m`);
+        async function fetchECMWF(lat, lon) {
+            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&current=temperature_2m&models=ecmwf_ifs04`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
+            
+            // Biztonsági ellenőrzés, mielőtt kiolvassuk az adatot
+            if (!data.current || typeof data.current.temperature_2m === 'undefined') {
+                throw new Error("Sikeres szerverkapcsolat, de az adatszerkezetből hiányzik a hőmérséklet.");
+            }
             return data.current.temperature_2m;
         }
 
@@ -503,9 +507,12 @@
             }
         }
 
-        function showErrorModal(source, msg) {
-            document.getElementById('error-modal-text').innerText = `Forrás: ${source}\n\nHibaüzenet:\n${msg}`;
-            document.getElementById('error-modal').style.display = 'flex';
+        function showErrorModal(id) {
+            let item = currentData.find(d => d.id === id);
+            if(item) {
+                document.getElementById('error-modal-text').innerText = `Forrás: ${item.source}\n\nHibaüzenet:\n${item.error}`;
+                document.getElementById('error-modal').style.display = 'flex';
+            }
         }
 
         function renderDashboard() {
@@ -562,7 +569,7 @@
                 
                 let valHtml = item.error ? `<span style="color:var(--danger-red);">--°C</span>` : `<span>${item.temp.toFixed(1)}°C</span>`;
                 let statusIcon = item.error 
-                    ? `<button class="icon-btn" onclick="showErrorModal('${item.source}', '${item.error}')">⚠️</button>` 
+                    ? `<button class="icon-btn" onclick="showErrorModal('${item.id}')">⚠️</button>` 
                     : `<span class="icon-btn" style="cursor:default;">✅</span>`;
                     
                 let excludeBtn = item.error ? '' : `<button class="icon-btn" onclick="toggleExclude('${item.id}')">${item.excluded ? '👁️' : '👁️‍🗨️'}</button>`;
