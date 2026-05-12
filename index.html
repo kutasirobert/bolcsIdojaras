@@ -465,16 +465,44 @@
             return data.properties.timeseries[0].data.instant.details.air_temperature;
         }
 
-        async function fetchECMWF(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&current=temperature_2m&models=ecmwf_ifs04`);
+		async function fetchECMWF(lat, lon) {
+            // Az ECMWF nem ad direkt "current" adatot, ezért lekérjük az órás (hourly) előrejelzést 2 napra,
+            // hogy biztosan benne legyen a jelenlegi pillanat (UTC időzóna szerint is).
+            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&hourly=temperature_2m&forecast_days=2`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
             
-            // Biztonsági ellenőrzés, mielőtt kiolvassuk az adatot
-            if (!data.current || typeof data.current.temperature_2m === 'undefined') {
-                throw new Error("Sikeres szerverkapcsolat, de az adatszerkezetből hiányzik a hőmérséklet.");
+            // Ellenőrizzük, hogy megkaptuk-e a menetrendet
+            if (!data.hourly || !data.hourly.temperature_2m || !data.hourly.time) {
+                throw new Error("Az ECMWF modell nem adott vissza órás adatokat.");
             }
-            return data.current.temperature_2m;
+
+            // 1. Aktuális időpont (másodperc alapú timestamp)
+            let nowEpoch = Math.floor(Date.now() / 1000);
+            
+            // 2. Végigmegyünk az időbélyegeken, és megkeressük a mostani pillanathoz legközelebbit
+            let closestIndex = 0;
+            let minDiff = Infinity;
+
+            for (let i = 0; i < data.hourly.time.length; i++) {
+                // Az API "2026-05-12T12:00" formátumot ad UTC-ben. Rácsapunk egy "Z"-t, hogy a böngésző is tisztán UTC-nek lássa.
+                let timeEpoch = new Date(data.hourly.time[i] + "Z").getTime() / 1000; 
+                let diff = Math.abs(timeEpoch - nowEpoch);
+                
+                // Csak akkor fogadjuk el a találatot, ha van is adat (néha a távoli jövő/múlt null)
+                if (diff < minDiff && data.hourly.temperature_2m[i] !== null) {
+                    minDiff = diff;
+                    closestIndex = i;
+                }
+            }
+
+            let currentTemp = data.hourly.temperature_2m[closestIndex];
+            
+            if (currentTemp === null || typeof currentTemp === 'undefined') {
+                throw new Error("Sikeres letöltés, de nincs érvényes hőfok az aktuális órához.");
+            }
+            
+            return currentTemp;
         }
 
         async function fetchICON(lat, lon) {
