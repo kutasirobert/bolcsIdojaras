@@ -303,7 +303,7 @@
         let appConfig = null;
         
         // --- IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT BASE64 KÓDOT ---
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
+        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic="; 
         
         function xor(str, key) {
             let res = "";
@@ -344,14 +344,22 @@
         function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
         // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON ÉS SZÉLIRÁNY ---
-        function getWeatherEmoji(code) {
+        function getWeatherEmoji(code, precip = 0) {
             if (code === 0) return '☀️';
             if (code === 1 || code === 2) return '⛅';
             if (code === 3) return '☁️';
             if (code >= 45 && code <= 48) return '🌫️';
-            if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return '🌧️';
+            
+            // Eső logikája (Mennyiség alapú ikon felülbírálás)
+            if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+                if (precip < 1.5) return '🌦️'; // Kisebb zápor, kevesebb cseppel
+                return '🌧️'; // Sima eső
+            }
             if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️';
-            if (code >= 95) return '🌩️';
+            if (code >= 95) {
+                if (precip < 1.5) return '🌩️'; // Csak villámlás
+                return '⛈️'; // Komoly vihar esővel
+            }
             return '🌤️';
         }
 
@@ -361,7 +369,6 @@
         }
 
         function getWindDirectionName(degree) {
-            // Magyar égtájak konvertálása 360 fokról
             const dirs = ['É', 'ÉK', 'K', 'DK', 'D', 'DNy', 'Ny', 'ÉNy'];
             return dirs[Math.round(degree / 45) % 8];
         }
@@ -776,12 +783,13 @@
                         modeCode = hourCodes.sort((a,b) => hourCodes.filter(v => v===a).length - hourCodes.filter(v => v===b).length).pop();
                     }
 
-                    // ÚJ ESŐCSEPPEK LOGIKA (Érzékenyített)
                     let dropIcon = '💧';
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
-                    let emoji = getWeatherEmoji(modeCode);
+                    // Itt adjuk át az átlagos esőmennyiséget is a fő ikon kiderítéséhez!
+                    let emoji = getWeatherEmoji(modeCode, avgPrecip);
+                    
                     let arrow = getWindArrow(avgWindDir);
                     let cardinalDir = getWindDirectionName(avgWindDir);
                     
