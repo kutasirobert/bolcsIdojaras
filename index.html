@@ -18,6 +18,11 @@
     <script src="dictionary.js"></script>
 
     <style>
+        /* Minden elem fegyelmezett méretezése */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         :root {
             --primary-blue: #3498db;
             --danger-red: #e74c3c;
@@ -26,10 +31,10 @@
             --dark-blue: #2c3e50;
         }
 
-        /* Lágy, nyugtató kék-zöld tenger/égbolt színátmenet, lassú mozgással */
+        /* Lágy, nyugtató kék-zöld tenger/égbolt színátmenet */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden;
+            overflow-x: hidden; /* Szigorúan letiltott vízszintes görgetés */
             background: linear-gradient(-45deg, #1abc9c, #2980b9, #2ecc71, #2c3e50);
             background-size: 400% 400%;
             animation: gradientBG 45s ease infinite;
@@ -50,13 +55,18 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 2.5vh;
             box-shadow: 0 1vh 4vh rgba(0,0,0,0.25);
-            padding: 3vh;
-            width: 96%;
-            max-width: 1200px; /* Jócskán megnöveltük, hogy PC-n kiférjen */
+            padding: 2vh 1.5vh; /* Mobilon kisebb padding, hogy elférjenek az adatok */
+            width: 100%;
+            max-width: 1200px; /* PC-n kinyílik */
             text-align: center;
-            box-sizing: border-box;
             max-height: 94vh;
             overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* PC nézeten kapjon nagyobb paddinget */
+        @media (min-width: 768px) {
+            .glass-panel { padding: 3vh; width: 96%; }
         }
 
         .glass-panel::-webkit-scrollbar { display: none; }
@@ -64,7 +74,7 @@
 
         .center-wrapper {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; width: 100%; padding: 2vh; box-sizing: border-box;
+            min-height: 100vh; width: 100%; padding: 1.5vh;
         }
 
         .screen { display: none; width: 100%; justify-content: center; }
@@ -87,7 +97,7 @@
 
         input[type="text"] {
             width: 100%; max-width: 400px; padding: 2vh; border: 0.3vh solid rgba(255,255,255,0.8); border-radius: 1.5vh;
-            font-size: 1.2rem; text-align: center; box-sizing: border-box; margin-bottom: 2vh; outline: none;
+            font-size: 1.2rem; text-align: center; margin-bottom: 2vh; outline: none;
             text-transform: uppercase; background: rgba(255,255,255,0.7); display: block; margin-left: auto; margin-right: auto;
         }
 
@@ -116,27 +126,29 @@
         .status-red { background: var(--danger-red); color: white; }
 
         /* Előrejelzés Stílusok */
-        .forecast-section { border-top: 2px solid rgba(0,0,0,0.1); padding-top: 2vh; margin-bottom: 2vh; text-align: left; }
+        .forecast-section { border-top: 2px solid rgba(0,0,0,0.1); padding-top: 2vh; margin-bottom: 2vh; text-align: left; width: 100%;}
         .forecast-title { font-size: 1.1rem; color: var(--dark-blue); margin-bottom: 1.5vh; text-align: center; font-weight:bold;}
         
         .forecast-row { display: flex; gap: 1vh; overflow-x: auto; padding-bottom: 1vh; scrollbar-width: none; }
         .forecast-row::-webkit-scrollbar { display: none; }
         
         .forecast-card { 
-            background: rgba(255,255,255,0.4); padding: 1.5vh 1vh; border-radius: 1.5vh; min-width: 85px; 
+            background: rgba(255,255,255,0.4); padding: 1vh; border-radius: 1.5vh; min-width: 0; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5vh; text-align: center;
-            position: relative; border: 1px solid rgba(255,255,255,0.5); flex: 1;
+            position: relative; border: 1px solid rgba(255,255,255,0.5); flex: 1; word-wrap: break-word;
         }
         .forecast-time { font-size: 0.85rem; color: #444; font-weight: bold;}
         .fc-icon { font-size: 1.8rem; line-height: 1;}
         .fc-temp { font-size: 1.2rem; color: var(--dark-blue); font-weight: 900; }
-        .fc-detail { font-size: 0.75rem; color: #333; font-weight: bold; white-space: nowrap; line-height: 1.2;}
+        
+        /* Itt engedélyeztük a szöveg tördelését, hogy mobilon is elférjen */
+        .fc-detail { font-size: 0.75rem; color: #333; font-weight: bold; white-space: normal; line-height: 1.2;}
         .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
 
         /* Reszponzív Grid Rendszerek a Blokkoknak és a Heti Nézetnek */
-        .blocks-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1vh; }
+        .blocks-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1vh; width: 100%;}
         
-        #forecast-weekly-container { display: grid; grid-template-columns: 1fr; gap: 1vh; }
+        #forecast-weekly-container { display: grid; grid-template-columns: 1fr; gap: 1vh; width: 100%;}
 
         @media (min-width: 768px) {
             .blocks-container { grid-template-columns: repeat(4, 1fr); }
@@ -146,14 +158,14 @@
         /* Heti előrejelzés (DE/DU) dizájn */
         .weekly-day-card {
             background: rgba(255,255,255,0.4); border-radius: 1.5vh; 
-            border: 1px solid rgba(255,255,255,0.5); overflow: hidden; height: 100%; display: flex; flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.5); overflow: hidden; height: 100%; display: flex; flex-direction: column; min-width: 0;
         }
         .weekly-day-title {
             background: rgba(0,0,0,0.05); padding: 0.8vh; text-align: center; font-weight: bold; 
             color: var(--dark-blue); font-size: 0.95rem; text-transform: uppercase;
         }
         .weekly-split { display: flex; width: 100%; flex: 1; }
-        .weekly-half { flex: 1; padding: 1vh; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;}
+        .weekly-half { flex: 1; padding: 0.5vh; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 0;}
         .weekly-half:first-child { border-right: 1px solid rgba(0,0,0,0.1); }
         .half-title { font-size: 0.75rem; color: #555; font-weight: bold; margin-bottom: 0.5vh; }
         .half-icon { font-size: 1.6rem; margin-bottom: 0.5vh; line-height:1;}
@@ -327,7 +339,7 @@
                 </div>
                 
                 <button class="btn-dark" onclick="closeSettings()" style="display:block; margin:0 auto 1vh auto;">💾 Mentés és Vissza</button>
-                <button class="btn-danger" onclick="confirmLockApp()" style="display:block; margin:0 auto 0 auto;">🔒 Kilépés a Rendszerből</button>
+                <button class="btn-danger" onclick="confirmLockApp()" style="display:block; margin:0 auto 0 auto;">💥 Teljes Törlés és Kilépés</button>
             </div>
         </div>
 
@@ -372,32 +384,47 @@
             initApp();
         }
 
-        function lockApp() {
-            localStorage.removeItem(AUTH_KEY);
-            window.location.reload();
+        // TISZTA LAP: Kilépés és a teljes Cache megsemmisítése
+        async function lockApp() {
+            localStorage.clear(); // Mindent törlünk a lokális tárolóból
+            
+            if ('caches' in window) {
+                try {
+                    let cacheNames = await caches.keys();
+                    for (let name of cacheNames) {
+                        await caches.delete(name);
+                    }
+                } catch(e) { console.error("Cache törlés hiba:", e); }
+            }
+            
+            window.location.reload(true);
         }
 
         function confirmLockApp() {
-            if (confirm("Biztosan ki akarsz lépni? A zsilip kulcsot újra meg kell majd adnod!")) {
+            if (confirm("Biztosan ki akarsz lépni? Ezzel TÖRLŐDIK az összes beállítás és a gyorsítótár (tiszta lap)!")) {
                 lockApp();
             }
         }
 
         function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
-        // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON ÉS SZÉLIRÁNY ---
+        // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON (Szűkített eső/zivatar határérték) ---
         function getWeatherEmoji(code, precip = 0, isNight = false) {
             if (code === 0) return isNight ? '🌙' : '☀️';
             if (code === 1 || code === 2) return isNight ? '☁️' : '⛅';
             if (code === 3) return '☁️';
             if (code >= 45 && code <= 48) return '🌫️';
+            
+            // Ha a csapadék a vizsgált időszakban több mint 1mm, akkor tiszta eső ikon kell!
             if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-                if (precip < 1.5) return isNight ? '🌧️' : '🌦️';
+                if (precip <= 1.0) return isNight ? '🌧️' : '🌦️';
                 return '🌧️';
             }
             if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️';
+            
+            // Zivatar esetén, ha esik is (> 1mm), akkor kapja meg az esős zivatar ikont
             if (code >= 95) {
-                if (precip < 1.5) return '🌩️';
+                if (precip <= 1.0) return '🌩️';
                 return '⛈️';
             }
             return isNight ? '🌙' : '🌤️';
@@ -414,7 +441,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v14";
+        const STORAGE_KEY = "weather_pwa_config_v15";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -781,7 +808,6 @@
                     count++;
 
                     pts.forEach(p => {
-                        let h = new Date(p.timeEpoch * 1000).getHours();
                         if (p.code !== undefined) codes.push(p.code);
                         if (p.windSpd !== undefined) windSpds.push(p.windSpd);
                         if (p.humidity !== undefined) hums.push(p.humidity);
@@ -826,7 +852,8 @@
             if (stats.precip >= 3 && stats.precip < 10) dropIcon = '💧💧';
             else if (stats.precip >= 10) dropIcon = '💧💧💧';
             
-            let emoji = getWeatherEmoji(stats.code, stats.precip / 12, isNight);
+            // Itt a stats.precip a teljes 12 órás csapadék!
+            let emoji = getWeatherEmoji(stats.code, stats.precip, isNight);
             let arrow = getWindArrow(stats.windDir);
             let cardinalDir = getWindDirectionName(stats.windDir);
 
@@ -914,6 +941,7 @@
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
+                    // 1 órás adatnál is átadjuk az avgPrecip-et
                     let emoji = getWeatherEmoji(modeCode, avgPrecip, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
@@ -1017,7 +1045,8 @@
                     if (blockPrecipTotal >= 3 && blockPrecipTotal < 10) dropIcon = '💧💧';
                     else if (blockPrecipTotal >= 10) dropIcon = '💧💧💧';
 
-                    let emoji = getWeatherEmoji(modeCode, avgPrecipPerHour, isNight);
+                    // A blokk 6 órás csapadékösszege megy a funkciónak!
+                    let emoji = getWeatherEmoji(modeCode, blockPrecipTotal, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
                     let cardinalDir = getWindDirectionName(avgWindDir);
