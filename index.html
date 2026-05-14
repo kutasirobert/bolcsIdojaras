@@ -131,10 +131,10 @@
         .forecast-row { display: flex; gap: 1vh; overflow-x: auto; padding-bottom: 1vh; scrollbar-width: none; }
         .forecast-row::-webkit-scrollbar { display: none; }
         
+        /* Itt megnöveltük a felső térközt (padding-top: 3vh), így az egész kártya megnyúlt, cserébe az ikonnak van helye! */
         .forecast-card { 
-            background: rgba(255,255,255,0.4); padding: 1vh; border-radius: 1.5vh; 
-            min-width: 95px; /* Hogy mobilon véletlenül se nyomja össze a kártyákat */
-            flex-shrink: 0; /* Letiltjuk az összenyomást a görgetősávban */
+            background: rgba(255,255,255,0.4); padding: 3vh 1vh 1vh 1vh; border-radius: 1.5vh; 
+            min-width: 95px; flex-shrink: 0; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5vh; text-align: center;
             position: relative; border: 1px solid rgba(255,255,255,0.5); word-wrap: break-word;
         }
@@ -144,8 +144,12 @@
         
         .fc-detail { font-size: 0.75rem; color: #333; font-weight: bold; white-space: normal; line-height: 1.2;}
         
-        /* A figyelem ikon beljebb került, hogy ne vágja le az overflow */
-        .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: 4px; right: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        /* Szabályos kör-alapú értesítés badge, pontosan pozicionálva a megnövelt fejléc részbe */
+        .forecast-alert { 
+            font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; 
+            width: 28px; height: 28px; background: rgba(255,255,255,0.95); border-radius: 50%; padding: 0; 
+            position: absolute; top: 6px; right: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); line-height: 1;
+        }
 
         /* Reszponzív Grid Rendszerek a Blokkoknak és a Heti Nézetnek */
         .blocks-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1vh; width: 100%;}
@@ -447,7 +451,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v16";
+        const STORAGE_KEY = "weather_pwa_config_v17";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -954,7 +958,7 @@
                     
                     let diff = Math.max(...hourTemps) - Math.min(...hourTemps);
                     let alertIcon = (hourTemps.length > 1 && diff > config.threshold) 
-                        ? `<span class="forecast-alert" onclick="alert('${detailsText}')">⚠️</span>` 
+                        ? `<div class="forecast-alert" onclick="alert('${detailsText}')">⚠️</div>` 
                         : '';
                     
                     let timeLabel = currentH + ":00";
