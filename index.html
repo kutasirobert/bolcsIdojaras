@@ -126,6 +126,17 @@
 
         .blocks-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1vh; }
 
+        /* Heti előrejelzés sorok */
+        .weekly-row {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 1.2vh 1vh; border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .weekly-row:last-child { border-bottom: none; }
+        .weekly-day { width: 35%; text-align: left; font-weight: bold; color: var(--dark-blue); font-size: 0.95rem; }
+        .weekly-icon { width: 15%; text-align: center; font-size: 1.5rem; }
+        .weekly-precip { width: 25%; text-align: center; font-size: 0.85rem; font-weight: bold; }
+        .weekly-temps { width: 25%; text-align: right; font-weight: bold; font-size: 1rem; white-space: nowrap;}
+
         /* Modalok */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
         
@@ -222,11 +233,11 @@
                     ⚠️ Jelentős eltérés a források között!
                 </div>
 
-                <!-- Következő 6 óra -->
+                <!-- Következő 12 óra -->
                 <div class="forecast-section" id="forecast-hourly-section" style="display: none;">
-                    <div class="forecast-title">Következő 6 óra</div>
+                    <div class="forecast-title">Következő 12 óra</div>
                     <div class="forecast-row" id="forecast-hourly-container">
-                        <!-- Generált 6 óra -->
+                        <!-- Generált 12 óra -->
                     </div>
                 </div>
 
@@ -238,7 +249,15 @@
                     </div>
                 </div>
 
-                <button class="btn-primary" id="fetch-btn" onclick="executeFetch()" style="margin-top:1vh;">🔄 ADATOK FRISSÍTÉSE</button>
+                <!-- Heti Előrejelzés -->
+                <div class="forecast-section" id="forecast-weekly-section" style="display: none; border-top:none; padding-top:0;">
+                    <div class="forecast-title" style="margin-top: 1vh; margin-bottom: 2vh;">Heti Előrejelzés</div>
+                    <div id="forecast-weekly-container" style="background: rgba(0,0,0,0.02); border-radius: 1.5vh; padding: 1vh;">
+                        <!-- Generált Napok -->
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="fetch-btn" onclick="executeFetch()" style="margin-top:2vh;">🔄 ADATOK FRISSÍTÉSE</button>
             </div>
         </div>
 
@@ -368,7 +387,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v11";
+        const STORAGE_KEY = "weather_pwa_config_v12";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -503,9 +522,10 @@
         }
 
         let extParams = "temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode,relative_humidity_2m,uv_index";
-
+        
+        // HETI ELŐREJELZÉSHEZ FELHÚZVA 8 NAPRA A LEKÉRDEZÉSEK (ahol lehet)
         async function fetchOpenMeteo(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${extParams}&forecast_days=2`);
+            let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${extParams}&forecast_days=8`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
             
@@ -523,7 +543,7 @@
         }
 
         async function fetchECMWF(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&hourly=${extParams}&forecast_days=2`);
+            let res = await fetch(`${appConfig.endpoints.omECMWF}?latitude=${lat}&longitude=${lon}&hourly=${extParams}&forecast_days=8`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
             if (!data.hourly || !data.hourly.temperature_2m) throw new Error("ECMWF adatstruktúra hiba.");
@@ -545,7 +565,7 @@
         }
 
         async function fetchICON(lat, lon) {
-            let res = await fetch(`${appConfig.endpoints.omICON}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${extParams}&models=icon_seamless&forecast_days=2`);
+            let res = await fetch(`${appConfig.endpoints.omICON}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${extParams}&models=icon_seamless&forecast_days=8`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
             let data = await res.json();
             
@@ -617,7 +637,7 @@
 
         async function fetchWeatherAPI(cityStr, key) {
             let forecastEndpoint = appConfig.endpoints.weatherApi.replace('current.json', 'forecast.json');
-            let res = await fetch(`${forecastEndpoint}?key=${key}&q=${cityStr}&days=2&aqi=no&alerts=no`);
+            let res = await fetch(`${forecastEndpoint}?key=${key}&q=${cityStr}&days=8&aqi=no&alerts=no`);
             if (!res.ok) throw new Error((res.status === 401 || res.status === 403) ? "Érvénytelen Kulcs" : `Hiba: ${res.status}`);
             let data = await res.json();
 
@@ -720,10 +740,12 @@
             let hourlySources = activeData.filter(d => d.hourly && d.hourly.length > 0);
             let hourlyContainer = document.getElementById('forecast-hourly-container');
             let dailyContainer = document.getElementById('forecast-blocks-container');
+            let weeklyContainer = document.getElementById('forecast-weekly-container');
             
             if (hourlySources.length === 0) {
                 document.getElementById('forecast-hourly-section').style.display = 'none';
                 document.getElementById('forecast-daily-section').style.display = 'none';
+                document.getElementById('forecast-weekly-section').style.display = 'none';
                 return;
             }
 
@@ -733,12 +755,11 @@
             let nowEpoch = Math.floor(Date.now() / 1000);
             let currentHourEpoch = nowEpoch - (nowEpoch % 3600); 
             
-            // --- KÖVETKEZŐ 6 ÓRA FELDOLGOZÁSA ---
+            // --- KÖVETKEZŐ 12 ÓRA FELDOLGOZÁSA ---
             hourlyContainer.innerHTML = '';
-            for (let i = 1; i <= 6; i++) {
+            for (let i = 1; i <= 12; i++) {
                 let targetEpoch = currentHourEpoch + (i * 3600);
                 
-                // Idő alapú nappal/éjszaka detektálás
                 let hourDate = new Date(targetEpoch * 1000);
                 let currentH = hourDate.getHours();
                 let isNight = (currentH >= 18 || currentH < 6);
@@ -786,7 +807,6 @@
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
-                    // Itt átadjuk az éjszaka-változót!
                     let emoji = getWeatherEmoji(modeCode, avgPrecip, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
@@ -823,14 +843,13 @@
             d.setHours(0,0,0,0);
             let midnightEpoch = d.getTime() / 1000;
             
-            // Jelenlegi blokk meghatározása (0=Hajnal, 1=Délelőtt, 2=Délután, 3=Este)
             let blockIndex = Math.floor(currentHour / 6); 
             const blockNames = ["Hajnal", "Délelőtt", "Délután", "Este"];
             
             let dynamicBlocks = [];
             for (let i = 0; i < 4; i++) {
                 let offset = blockIndex + i;
-                let dayOffset = Math.floor(offset / 4); // 0 = ma, 1 = holnap
+                let dayOffset = Math.floor(offset / 4); 
                 let bIdx = offset % 4;
                 let startH = bIdx * 6;
                 let endH = startH + 6;
@@ -841,7 +860,7 @@
                     startEpoch: midnightEpoch + (dayOffset * 86400) + (startH * 3600),
                     endEpoch: midnightEpoch + (dayOffset * 86400) + (endH * 3600),
                     duration: 6,
-                    bIdx: bIdx // Eltároljuk, hogy melyik szakasz (a hold ikonokhoz)
+                    bIdx: bIdx 
                 });
             }
 
@@ -849,7 +868,6 @@
                 let hourTemps = [], hourPrecip = [], hourWindSpd = [], hourHum = [], hourCodes = [], hourUv = [];
                 let sumSin = 0, sumCos = 0, dirCount = 0;
 
-                // Ha Hajnal (0) vagy Este (3) van, akkor éjszaka van
                 let isNight = (block.bIdx === 0 || block.bIdx === 3);
 
                 hourlySources.forEach(source => {
@@ -892,7 +910,6 @@
                     if (blockPrecipTotal >= 3 && blockPrecipTotal < 10) dropIcon = '💧💧';
                     else if (blockPrecipTotal >= 10) dropIcon = '💧💧💧';
 
-                    // A blokk is megkapja az isNight paramétert!
                     let emoji = getWeatherEmoji(modeCode, avgPrecipPerHour, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
@@ -917,6 +934,84 @@
             });
             
             if(dailyContainer.innerHTML === '') { dailyContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#7f8c8d; font-size:0.9rem;">Nem sikerült betölteni az adatokat.</div>'; }
+
+            // --- HETI ELŐREJELZÉS FELDOLGOZÁSA ---
+            weeklyContainer.innerHTML = '';
+            const daysHu = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
+            let hasWeeklyData = false;
+
+            // Indulunk a holnapi naptól (d=1) a rákövetkező 7. napig (d=7)
+            for (let dayOff = 1; dayOff <= 7; dayOff++) {
+                let startE = midnightEpoch + (dayOff * 86400);
+                let endE = startE + 86400;
+                
+                let sumMin = 0, sumMax = 0, sumPrecip = 0;
+                let validSourcesForDay = 0;
+                let daytimeCodes = [];
+
+                hourlySources.forEach(source => {
+                    // Leszűrjük a forrás adatait erre a specifikus napra
+                    let dayPoints = source.hourly.filter(h => h.timeEpoch >= startE && h.timeEpoch < endE && h.temp !== null);
+                    
+                    // Csak akkor számoljuk bele a forrást a napba, ha van elég adata (ne adjon hamis min/max-ot)
+                    if (dayPoints.length >= 4) {
+                        let minT = Math.min(...dayPoints.map(p => p.temp));
+                        let maxT = Math.max(...dayPoints.map(p => p.temp));
+                        
+                        // Átlagos óránkénti eső * 24 óra = napi összecsapadék
+                        let avgPrecipPerHour = dayPoints.reduce((a, b) => a + (b.precip || 0), 0) / dayPoints.length;
+                        let dailyPrecip = avgPrecipPerHour * 24;
+                        
+                        sumMin += minT;
+                        sumMax += maxT;
+                        sumPrecip += dailyPrecip;
+                        validSourcesForDay++;
+                        
+                        // Nappali kódok (06:00 - 18:00) a nap ikonjához
+                        dayPoints.forEach(p => {
+                            let h = new Date(p.timeEpoch * 1000).getHours();
+                            if (h >= 6 && h <= 18 && p.code !== undefined) {
+                                daytimeCodes.push(p.code);
+                            }
+                        });
+                    }
+                });
+
+                if (validSourcesForDay > 0) {
+                    hasWeeklyData = true;
+                    
+                    let avgMin = sumMin / validSourcesForDay;
+                    let avgMax = sumMax / validSourcesForDay;
+                    let avgPrecip = sumPrecip / validSourcesForDay;
+                    
+                    let modeCode = 3; // Alapértelmezett felhős
+                    if (daytimeCodes.length > 0) {
+                        modeCode = daytimeCodes.sort((a,b) => daytimeCodes.filter(v => v===a).length - daytimeCodes.filter(v => v===b).length).pop();
+                    }
+
+                    // A heti ikon mindig nappali (isNight = false)
+                    let emoji = getWeatherEmoji(modeCode, avgPrecip / 24, false);
+                    
+                    let dateObj = new Date(startE * 1000);
+                    let dayName = dayOff === 1 ? "Holnap" : daysHu[dateObj.getDay()];
+                    
+                    let precipStr = avgPrecip > 0.5 ? `<span style="color:var(--primary-blue)">💧 ${avgPrecip.toFixed(1)} mm</span>` : '';
+
+                    weeklyContainer.innerHTML += `
+                        <div class="weekly-row">
+                            <div class="weekly-day">${dayName}</div>
+                            <div class="weekly-icon">${emoji}</div>
+                            <div class="weekly-precip">${precipStr}</div>
+                            <div class="weekly-temps">
+                                <span style="color:#7f8c8d">${Math.round(avgMin)}°</span> / 
+                                <span style="color:var(--dark-blue)">${Math.round(avgMax)}°</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('forecast-weekly-section').style.display = hasWeeklyData ? 'block' : 'none';
         }
 
         window.onload = () => { 
