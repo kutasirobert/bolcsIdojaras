@@ -34,7 +34,7 @@
         /* Lágy, nyugtató kék-zöld tenger/égbolt színátmenet */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow-x: hidden; /* Szigorúan letiltott vízszintes görgetés */
+            overflow-x: hidden; 
             background: linear-gradient(-45deg, #1abc9c, #2980b9, #2ecc71, #2c3e50);
             background-size: 400% 400%;
             animation: gradientBG 45s ease infinite;
@@ -55,16 +55,15 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 2.5vh;
             box-shadow: 0 1vh 4vh rgba(0,0,0,0.25);
-            padding: 2vh 1.5vh; /* Mobilon kisebb padding, hogy elférjenek az adatok */
+            padding: 2vh 1.5vh; 
             width: 100%;
-            max-width: 1200px; /* PC-n kinyílik */
+            max-width: 1400px; /* PC-n hatalmasra kinyílhat */
             text-align: center;
             max-height: 94vh;
             overflow-y: auto;
             overflow-x: hidden;
         }
 
-        /* PC nézeten kapjon nagyobb paddinget */
         @media (min-width: 768px) {
             .glass-panel { padding: 3vh; width: 96%; }
         }
@@ -133,17 +132,20 @@
         .forecast-row::-webkit-scrollbar { display: none; }
         
         .forecast-card { 
-            background: rgba(255,255,255,0.4); padding: 1vh; border-radius: 1.5vh; min-width: 0; 
+            background: rgba(255,255,255,0.4); padding: 1vh; border-radius: 1.5vh; 
+            min-width: 95px; /* Hogy mobilon véletlenül se nyomja össze a kártyákat */
+            flex-shrink: 0; /* Letiltjuk az összenyomást a görgetősávban */
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5vh; text-align: center;
-            position: relative; border: 1px solid rgba(255,255,255,0.5); flex: 1; word-wrap: break-word;
+            position: relative; border: 1px solid rgba(255,255,255,0.5); word-wrap: break-word;
         }
         .forecast-time { font-size: 0.85rem; color: #444; font-weight: bold;}
         .fc-icon { font-size: 1.8rem; line-height: 1;}
         .fc-temp { font-size: 1.2rem; color: var(--dark-blue); font-weight: 900; }
         
-        /* Itt engedélyeztük a szöveg tördelését, hogy mobilon is elférjen */
         .fc-detail { font-size: 0.75rem; color: #333; font-weight: bold; white-space: normal; line-height: 1.2;}
-        .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        
+        /* A figyelem ikon beljebb került, hogy ne vágja le az overflow */
+        .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: 4px; right: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
 
         /* Reszponzív Grid Rendszerek a Blokkoknak és a Heti Nézetnek */
         .blocks-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1vh; width: 100%;}
@@ -386,7 +388,7 @@
 
         // TISZTA LAP: Kilépés és a teljes Cache megsemmisítése
         async function lockApp() {
-            localStorage.clear(); // Mindent törlünk a lokális tárolóból
+            localStorage.clear(); 
             
             if ('caches' in window) {
                 try {
@@ -410,23 +412,27 @@
 
         // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON (Szűkített eső/zivatar határérték) ---
         function getWeatherEmoji(code, precip = 0, isNight = false) {
+            
+            // SZIGORÚ FELÜLBÍRÁLAT: Ha legalább 1.0 mm csapadék van, akkor biztos esik!
+            if (precip >= 1.0) {
+                if (code >= 95) return '⛈️'; // Eső + Villám (Zivatar)
+                if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️'; // Havazás
+                return '🌧️'; // Egyébként tiszta eső
+            }
+
+            // Ha 1mm alatt vagyunk, jöhet a normál kód-logika
             if (code === 0) return isNight ? '🌙' : '☀️';
             if (code === 1 || code === 2) return isNight ? '☁️' : '⛅';
             if (code === 3) return '☁️';
             if (code >= 45 && code <= 48) return '🌫️';
             
-            // Ha a csapadék a vizsgált időszakban több mint 1mm, akkor tiszta eső ikon kell!
             if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
-                if (precip <= 1.0) return isNight ? '🌧️' : '🌦️';
-                return '🌧️';
+                return isNight ? '🌧️' : '🌦️'; // Pici csapadék kód alapján
             }
             if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️';
             
-            // Zivatar esetén, ha esik is (> 1mm), akkor kapja meg az esős zivatar ikont
-            if (code >= 95) {
-                if (precip <= 1.0) return '🌩️';
-                return '⛈️';
-            }
+            if (code >= 95) return '🌩️'; // Száraz, vagy nagyon gyenge zivatar
+
             return isNight ? '🌙' : '🌤️';
         }
 
@@ -441,7 +447,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v15";
+        const STORAGE_KEY = "weather_pwa_config_v16";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -852,7 +858,7 @@
             if (stats.precip >= 3 && stats.precip < 10) dropIcon = '💧💧';
             else if (stats.precip >= 10) dropIcon = '💧💧💧';
             
-            // Itt a stats.precip a teljes 12 órás csapadék!
+            // Az összesített csapadékkal vizsgáljuk meg, kell-e eső ikon!
             let emoji = getWeatherEmoji(stats.code, stats.precip, isNight);
             let arrow = getWindArrow(stats.windDir);
             let cardinalDir = getWindDirectionName(stats.windDir);
@@ -941,7 +947,6 @@
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
-                    // 1 órás adatnál is átadjuk az avgPrecip-et
                     let emoji = getWeatherEmoji(modeCode, avgPrecip, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
@@ -1045,7 +1050,6 @@
                     if (blockPrecipTotal >= 3 && blockPrecipTotal < 10) dropIcon = '💧💧';
                     else if (blockPrecipTotal >= 10) dropIcon = '💧💧💧';
 
-                    // A blokk 6 órás csapadékösszege megy a funkciónak!
                     let emoji = getWeatherEmoji(modeCode, blockPrecipTotal, isNight);
                     
                     let arrow = getWindArrow(avgWindDir);
