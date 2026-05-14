@@ -131,7 +131,6 @@
         .forecast-row { display: flex; gap: 1vh; overflow-x: auto; padding-bottom: 1vh; scrollbar-width: none; }
         .forecast-row::-webkit-scrollbar { display: none; }
         
-        /* Itt megnöveltük a felső térközt (padding-top: 3vh), így az egész kártya megnyúlt, cserébe az ikonnak van helye! */
         .forecast-card { 
             background: rgba(255,255,255,0.4); padding: 3vh 1vh 1vh 1vh; border-radius: 1.5vh; 
             min-width: 95px; flex-shrink: 0; 
@@ -144,7 +143,6 @@
         
         .fc-detail { font-size: 0.75rem; color: #333; font-weight: bold; white-space: normal; line-height: 1.2;}
         
-        /* Szabályos kör-alapú értesítés badge, pontosan pozicionálva a megnövelt fejléc részbe */
         .forecast-alert { 
             font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; 
             width: 28px; height: 28px; background: rgba(255,255,255,0.95); border-radius: 50%; padding: 0; 
@@ -414,17 +412,18 @@
 
         function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
-        // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON (Szűkített eső/zivatar határérték) ---
-        function getWeatherEmoji(code, precip = 0, isNight = false) {
+        // --- SEGÉDFÜGGVÉNYEK: IDŐJÁRÁS IKON ---
+        // A 'threshold' paraméter biztosítja a rugalmas határértéket (1 órás blokkra 0.3, a többire 1.0)
+        function getWeatherEmoji(code, precip = 0, isNight = false, threshold = 1.0) {
             
-            // SZIGORÚ FELÜLBÍRÁLAT: Ha legalább 1.0 mm csapadék van, akkor biztos esik!
-            if (precip >= 1.0) {
+            // SZIGORÚ FELÜLBÍRÁLAT: Ha legalább a határértéknyi csapadék van, akkor biztos esik!
+            if (precip >= threshold) {
                 if (code >= 95) return '⛈️'; // Eső + Villám (Zivatar)
                 if ((code >= 71 && code <= 77) || code === 85 || code === 86) return '❄️'; // Havazás
                 return '🌧️'; // Egyébként tiszta eső
             }
 
-            // Ha 1mm alatt vagyunk, jöhet a normál kód-logika
+            // Ha a határérték alatt vagyunk, jöhet a normál kód-logika
             if (code === 0) return isNight ? '🌙' : '☀️';
             if (code === 1 || code === 2) return isNight ? '☁️' : '⛅';
             if (code === 3) return '☁️';
@@ -451,7 +450,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v17";
+        const STORAGE_KEY = "weather_pwa_config_v18";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -862,8 +861,8 @@
             if (stats.precip >= 3 && stats.precip < 10) dropIcon = '💧💧';
             else if (stats.precip >= 10) dropIcon = '💧💧💧';
             
-            // Az összesített csapadékkal vizsgáljuk meg, kell-e eső ikon!
-            let emoji = getWeatherEmoji(stats.code, stats.precip, isNight);
+            // Itt 1.0 a threshold, mert több órás adat
+            let emoji = getWeatherEmoji(stats.code, stats.precip, isNight, 1.0);
             let arrow = getWindArrow(stats.windDir);
             let cardinalDir = getWindDirectionName(stats.windDir);
 
@@ -951,7 +950,8 @@
                     if (avgPrecip >= 1.5 && avgPrecip < 4) dropIcon = '💧💧';
                     else if (avgPrecip >= 4) dropIcon = '💧💧💧';
 
-                    let emoji = getWeatherEmoji(modeCode, avgPrecip, isNight);
+                    // 1 órás nézetnél 0.3 a határérték
+                    let emoji = getWeatherEmoji(modeCode, avgPrecip, isNight, 0.3);
                     
                     let arrow = getWindArrow(avgWindDir);
                     let cardinalDir = getWindDirectionName(avgWindDir);
@@ -1054,7 +1054,8 @@
                     if (blockPrecipTotal >= 3 && blockPrecipTotal < 10) dropIcon = '💧💧';
                     else if (blockPrecipTotal >= 10) dropIcon = '💧💧💧';
 
-                    let emoji = getWeatherEmoji(modeCode, blockPrecipTotal, isNight);
+                    // Itt 1.0 a threshold
+                    let emoji = getWeatherEmoji(modeCode, blockPrecipTotal, isNight, 1.0);
                     
                     let arrow = getWindArrow(avgWindDir);
                     let cardinalDir = getWindDirectionName(avgWindDir);
