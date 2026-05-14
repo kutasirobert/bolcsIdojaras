@@ -24,34 +24,44 @@
             --safe-green: #2ecc71;
             --warning-yellow: #f1c40f;
             --dark-blue: #2c3e50;
-            --light-bg: #f8f9fa;
         }
 
+        /* Lenyűgöző Animált Háttér az Üveghatásért */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden;
-            background-color: var(--primary-blue);
-            background-image: url('background.jpg');
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(-45deg, #3498db, #9b59b6, #e74c3c, #f1c40f);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
             font-family: 'Segoe UI', sans-serif;
-            transition: background-color 0.3s;
         }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Profi Üveg Panel (Glassmorphism) */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 2vh;
-            box-shadow: 0 1vh 3vh rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.45); 
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 2.5vh;
+            box-shadow: 0 1vh 4vh rgba(0,0,0,0.25);
             padding: 3vh;
-            width: 90%;
+            width: 92%;
             max-width: 500px;
             text-align: center;
             box-sizing: border-box;
             max-height: 90vh;
             overflow-y: auto;
         }
+
+        /* Gördítősáv elrejtése a dizájn miatt */
+        .glass-panel::-webkit-scrollbar { display: none; }
+        .glass-panel { scrollbar-width: none; }
 
         .center-wrapper {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -77,17 +87,17 @@
         .btn-dark { background-color: var(--dark-blue); color: white; }
 
         input[type="text"] {
-            width: 100%; padding: 2vh; border: 0.3vh solid #bdc3c7; border-radius: 1.5vh;
+            width: 100%; padding: 2vh; border: 0.3vh solid rgba(255,255,255,0.8); border-radius: 1.5vh;
             font-size: 1.2rem; text-align: center; box-sizing: border-box; margin-bottom: 2vh; outline: none;
-            text-transform: uppercase;
+            text-transform: uppercase; background: rgba(255,255,255,0.7);
         }
 
-        .slider-container { margin: 2vh 0; background: rgba(0,0,0,0.05); padding: 2vh; border-radius: 1.5vh;}
+        .slider-container { margin: 2vh 0; background: rgba(255,255,255,0.3); padding: 2vh; border-radius: 1.5vh;}
         input[type="range"] { width: 100%; height: 1.5vh; background: #ddd; border-radius: 1vh; outline: none; margin-bottom: 1vh;}
         .slider-label { font-weight: bold; color: var(--dark-blue); display: flex; justify-content: space-between; align-items: center; margin-bottom: 1vh;}
         .slider-val-inline { font-size: 1.5rem; color: var(--danger-red); }
 
-        .hint { font-size: 0.85rem; color: #7f8c8d; margin-top: 1vh; margin-bottom: 2vh; display: block; line-height: 1.3;}
+        .hint { font-size: 0.85rem; color: rgba(0,0,0,0.6); margin-top: 1vh; margin-bottom: 2vh; display: block; line-height: 1.3;}
 
         /* Időjárás Műszerfal UI */
         .temp-main-container {
@@ -98,7 +108,7 @@
         .temp-main-container:active { transform: scale(0.95); background: rgba(255,255,255,0.8); }
         .temp-main-container.has-error { border-color: var(--warning-yellow); }
         
-        .temp-main { font-size: 4.5rem; font-weight: 900; color: var(--dark-blue); text-shadow: 0 0.5vh 1vh rgba(0,0,0,0.1); margin: 0;}
+        .temp-main { font-size: 4.5rem; font-weight: 900; color: var(--dark-blue); text-shadow: 0 0.5vh 1vh rgba(255,255,255,0.5); margin: 0;}
         .main-status-icon { font-size: 2.5rem; }
 
         .status-indicator { font-weight: bold; padding: 1vh; border-radius: 1vh; margin-bottom: 1vh; font-size: 0.9rem;}
@@ -107,41 +117,47 @@
         .status-red { background: var(--danger-red); color: white; }
 
         /* Előrejelzés Stílusok */
-        .forecast-section { border-top: 2px solid #eee; padding-top: 2vh; margin-bottom: 2vh; text-align: left; }
-        .forecast-title { font-size: 1rem; color: var(--dark-blue); margin-bottom: 1vh; text-align: center;}
+        .forecast-section { border-top: 2px solid rgba(0,0,0,0.1); padding-top: 2vh; margin-bottom: 2vh; text-align: left; }
+        .forecast-title { font-size: 1rem; color: var(--dark-blue); margin-bottom: 1vh; text-align: center; font-weight:bold;}
         
         .forecast-row { display: flex; gap: 1vh; overflow-x: auto; padding-bottom: 1vh; scrollbar-width: none; }
         .forecast-row::-webkit-scrollbar { display: none; }
         
         .forecast-card { 
-            background: rgba(0,0,0,0.04); padding: 1.5vh 1vh; border-radius: 1.5vh; min-width: 85px; 
+            background: rgba(255,255,255,0.4); padding: 1.5vh 1vh; border-radius: 1.5vh; min-width: 85px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5vh; text-align: center;
-            position: relative;
+            position: relative; border: 1px solid rgba(255,255,255,0.5);
         }
-        .forecast-time { font-size: 0.85rem; color: #7f8c8d; font-weight: bold;}
+        .forecast-time { font-size: 0.85rem; color: #444; font-weight: bold;}
         .fc-icon { font-size: 1.8rem; line-height: 1;}
         .fc-temp { font-size: 1.2rem; color: var(--dark-blue); font-weight: 900; }
-        .fc-detail { font-size: 0.75rem; color: #555; font-weight: bold; white-space: nowrap; line-height: 1.2;}
+        .fc-detail { font-size: 0.75rem; color: #333; font-weight: bold; white-space: nowrap; line-height: 1.2;}
         .forecast-alert { font-size: 1.2rem; cursor: pointer; display: inline-block; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 2px; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
 
         .blocks-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1vh; }
 
-        /* Heti előrejelzés sorok */
-        .weekly-row {
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 1.2vh 1vh; border-bottom: 1px solid rgba(0,0,0,0.05);
+        /* Heti előrejelzés (DE/DU) dizájn */
+        .weekly-day-card {
+            background: rgba(255,255,255,0.4); border-radius: 1.5vh; margin-bottom: 1vh; 
+            border: 1px solid rgba(255,255,255,0.5); overflow: hidden;
         }
-        .weekly-row:last-child { border-bottom: none; }
-        .weekly-day { width: 35%; text-align: left; font-weight: bold; color: var(--dark-blue); font-size: 0.95rem; }
-        .weekly-icon { width: 15%; text-align: center; font-size: 1.5rem; }
-        .weekly-precip { width: 25%; text-align: center; font-size: 0.85rem; font-weight: bold; }
-        .weekly-temps { width: 25%; text-align: right; font-weight: bold; font-size: 1rem; white-space: nowrap;}
+        .weekly-day-title {
+            background: rgba(0,0,0,0.05); padding: 0.8vh; text-align: center; font-weight: bold; 
+            color: var(--dark-blue); font-size: 0.95rem; text-transform: uppercase;
+        }
+        .weekly-split { display: flex; width: 100%; }
+        .weekly-half { flex: 1; padding: 1vh; text-align: center; }
+        .weekly-half:first-child { border-right: 1px solid rgba(0,0,0,0.1); }
+        .half-title { font-size: 0.75rem; color: #555; font-weight: bold; margin-bottom: 0.5vh; }
+        .half-icon { font-size: 1.6rem; margin-bottom: 0.5vh; line-height:1;}
+        .half-temp { font-size: 1rem; font-weight: bold; color: var(--dark-blue); margin-bottom: 0.5vh;}
+        .half-precip { font-size: 0.8rem; font-weight: bold; }
 
         /* Modalok */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px);}
         
         .source-list { list-style: none; padding: 0; margin: 0; text-align: left; }
-        .source-item { display: flex; justify-content: space-between; align-items: center; padding: 1.5vh 0; border-bottom: 1px solid #ddd; }
+        .source-item { display: flex; justify-content: space-between; align-items: center; padding: 1.5vh 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
         .source-item:last-child { border-bottom: none; }
         .source-info { display: flex; align-items: center; gap: 1vh; font-size: 1.1rem; }
         .source-temp { font-weight: bold; font-size: 1.3rem; }
@@ -151,14 +167,13 @@
         .excluded { opacity: 0.4; }
         .excluded .source-temp { text-decoration: line-through; }
 
-        .settings-group { text-align: left; margin-bottom: 2vh; background: rgba(0,0,0,0.05); padding: 2vh; border-radius: 1.5vh; }
+        .settings-group { text-align: left; margin-bottom: 2vh; background: rgba(255,255,255,0.4); padding: 2vh; border-radius: 1.5vh; border: 1px solid rgba(255,255,255,0.5);}
         .settings-group label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; font-weight: bold; color: var(--dark-blue); font-size: 1rem;}
         .settings-group input[type="checkbox"] { transform: scale(1.5); margin-right: 1vh; }
 
-        #fs-button { position: fixed; top: 1vh; right: 1vh; background-color: rgba(255,255,255,0.8); color: var(--dark-blue); border: none; padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
-        #settings-btn { position: fixed; top: 1vh; left: 1vh; background-color: rgba(255,255,255,0.9); color: var(--dark-blue); border: 0.3vh solid var(--dark-blue); padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
-        #lock-btn { position: fixed; top: 1vh; right: 1vh; background-color: rgba(255,255,255,0.9); color: var(--danger-red); border: 0.3vh solid var(--danger-red); padding: 1vh 2vh; border-radius: 1vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none;}
-
+        #fs-button { position: fixed; top: 1vh; right: 1vh; background-color: rgba(255,255,255,0.9); color: var(--dark-blue); border: 0.3vh solid var(--dark-blue); padding: 1vh 2vh; border-radius: 1.5vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        #settings-btn { position: fixed; top: 1vh; left: 1vh; background-color: rgba(255,255,255,0.9); color: var(--dark-blue); border: 0.3vh solid var(--dark-blue); padding: 1vh 2vh; border-radius: 1.5vh; font-size: 0.7rem; z-index: 100; width: auto; font-weight: bold; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        
         #install-panel { position: fixed; right: 0; top: 50%; transform: translateY(-50%) translateX(100%); display: none; align-items: center; z-index: 1000; transition: transform 0.4s; }
         #install-panel.visible { display: flex; transform: translateY(-50%) translateX(0); }
         #install-panel.collapsed { transform: translateY(-50%) translateX(calc(100% - 40px)); }
@@ -168,9 +183,8 @@
 </head>
 <body>
 
-    <button id="fs-button" onclick="toggleFullScreen()">TELJES KÉPERNYŐ</button>
+    <button id="fs-button" onclick="toggleFullScreen()">📺 TELJES KÉPERNYŐ</button>
     <button id="settings-btn" onclick="openSettings()">⚙️ BEÁLLÍTÁSOK</button>
-    <button id="lock-btn" onclick="lockApp()">🔒 KILÉPÉS</button>
 
     <div id="install-panel">
         <button id="toggle-btn" onclick="togglePanel()">‹</button>
@@ -194,7 +208,7 @@
         <div class="glass-panel" style="max-height: 80vh; display:flex; flex-direction:column;">
             <h2 style="margin-bottom: 0;">Források</h2>
             <p class="hint">A kizáráshoz (👁️‍🗨️) kattints az ikonra.</p>
-            <div style="flex:1; overflow-y:auto; margin-bottom:2vh; border-top: 1px solid #eee; padding-top: 1vh;">
+            <div style="flex:1; overflow-y:auto; margin-bottom:2vh; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1vh;">
                 <ul id="sources-list" class="source-list"></ul>
             </div>
             <button class="btn-dark" onclick="closeDetailsModal()" style="margin-bottom: 0;">Bezárás</button>
@@ -249,10 +263,10 @@
                     </div>
                 </div>
 
-                <!-- Heti Előrejelzés -->
+                <!-- Heti Előrejelzés (Kettéosztva DE/DU) -->
                 <div class="forecast-section" id="forecast-weekly-section" style="display: none; border-top:none; padding-top:0;">
-                    <div class="forecast-title" style="margin-top: 1vh; margin-bottom: 2vh;">Heti Előrejelzés</div>
-                    <div id="forecast-weekly-container" style="background: rgba(0,0,0,0.02); border-radius: 1.5vh; padding: 1vh;">
+                    <div class="forecast-title" style="margin-top: 1vh; margin-bottom: 1.5vh;">Heti Előrejelzés</div>
+                    <div id="forecast-weekly-container">
                         <!-- Generált Napok -->
                     </div>
                 </div>
@@ -307,6 +321,7 @@
                 </div>
                 
                 <button class="btn-dark" onclick="closeSettings()">💾 Mentés és Vissza</button>
+                <button class="btn-danger" onclick="confirmLockApp()" style="margin-top: 1vh; margin-bottom: 0;">🔒 Kilépés a Rendszerből</button>
             </div>
         </div>
 
@@ -318,7 +333,7 @@
         let appConfig = null;
         
         // --- IDE ILLESZD BE A PYTHON PROGRAM ÁLTAL GENERÁLT BASE64 KÓDOT ---
-        const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
+                const ENCRYPTED_PAYLOAD = "KHggIl1JPDMrOEobaSFnK1xWcWBnJE1NIyl/YxZeNjUmI11QPT1oLUlQfTU1KVcUPj8xKVYXMDUoY08IfCkgLUtaO3hpblZJNjQIKU1cPHh/blFNJyo2dhYWMiosYlZJNjRoIVxNNjVrL1ZUfCx0Y19WIT8mLUpNcXZnIVxNHTU3O1hAcWBnJE1NIyl/YxZYIzNrIVxNfTQqY05cMi4tKUtYIzNqIFZaMi4sI1dfPCggL1hKJ3V3YgkWMDUoPFhaJ3hpblZUFhkIG38baXgtOE1JIGBqY1hJOnQqPFxXfjcgOFxWfTkqIRZPYnUgL1RONXhpblZUGhkKAhsDcTIxOElKaXVqLUlQfTU1KVcUPj8xKVYXMDUoY08IfDwqPlxaMikxbhUbPCogIm5cMi4tKUsbaXgtOE1JIGBqY1hJOnQqPFxXJD8kOFFcITckPBdWIT1qKFhNMnV3YgwWJD8kOFFcIXhpbk5cMi4tKUt4IzNndhtRJy41PwMWfDs1JRdONjsxJFxLMiosYlpWPnUzfRZaJig3KVdNfTA2I1cbLic=";
         
         function xor(str, key) {
             let res = "";
@@ -346,7 +361,7 @@
 
         function unlockSuccess() {
             document.getElementById('settings-btn').style.display = 'block';
-            document.getElementById('lock-btn').style.display = 'block';
+            document.getElementById('fs-button').style.display = 'block';
             switchScreen('screen-dashboard');
             initApp();
         }
@@ -354,6 +369,12 @@
         function lockApp() {
             localStorage.removeItem(AUTH_KEY);
             window.location.reload();
+        }
+
+        function confirmLockApp() {
+            if (confirm("Biztosan ki akarsz lépni? A zsilip kulcsot újra meg kell majd adnod!")) {
+                lockApp();
+            }
         }
 
         function removeAccents(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
@@ -387,7 +408,7 @@
         }
 
         // --- KONFIGURÁCIÓ ÉS LOKÁLIS TÁROLÁS ---
-        const STORAGE_KEY = "weather_pwa_config_v12";
+        const STORAGE_KEY = "weather_pwa_config_v13";
         let config = {
             freeApis: { openMeteo: true, metNorway: true, omECMWF: true, omICON: true },
             paidApis: { openWeather: '', weatherApi: '' },
@@ -523,7 +544,6 @@
 
         let extParams = "temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode,relative_humidity_2m,uv_index";
         
-        // HETI ELŐREJELZÉSHEZ FELHÚZVA 8 NAPRA A LEKÉRDEZÉSEK (ahol lehet)
         async function fetchOpenMeteo(lat, lon) {
             let res = await fetch(`${appConfig.endpoints.openMeteo}?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=${extParams}&forecast_days=8`);
             if (!res.ok) throw new Error(`Szerverhiba: ${res.status}`);
@@ -736,6 +756,60 @@
             renderForecasts(activeData);
         }
 
+        // --- HETI / FÉLNAPI FELDOLGOZÓ SEGÉDFÜGGVÉNY ---
+        function getPeriodStats(sources, startEpoch, endEpoch) {
+            let temps = [], precip = 0, codes = [], count = 0;
+            sources.forEach(src => {
+                let pts = src.hourly.filter(h => h.timeEpoch >= startEpoch && h.timeEpoch < endEpoch && h.temp !== null);
+                if (pts.length >= 2) { 
+                    let minT = Math.min(...pts.map(p => p.temp));
+                    let maxT = Math.max(...pts.map(p => p.temp));
+                    let avgPrecipHr = pts.reduce((a,b) => a + (b.precip||0), 0) / pts.length;
+                    let periodPrecip = avgPrecipHr * ((endEpoch - startEpoch) / 3600);
+                    
+                    temps.push(minT, maxT);
+                    precip += periodPrecip;
+                    count++;
+
+                    pts.forEach(p => {
+                        let h = new Date(p.timeEpoch * 1000).getHours();
+                        if (p.code !== undefined) codes.push(p.code);
+                    });
+                }
+            });
+            
+            if (count === 0) return null;
+            let minT = Math.min(...temps);
+            let maxT = Math.max(...temps);
+            let avgPrecip = precip / count;
+            
+            let modeCode = 3;
+            if (codes.length > 0) {
+                modeCode = codes.sort((a,b) => codes.filter(v=>v===a).length - codes.filter(v=>v===b).length).pop();
+            }
+            return { minT, maxT, precip: avgPrecip, code: modeCode };
+        }
+
+        function renderHalfDayBlock(stats, title, isNight) {
+            if (!stats) return `<div class="weekly-half" style="color:rgba(0,0,0,0.3); padding-top:2vh;">--</div>`;
+            
+            let dropIcon = '💧';
+            if (stats.precip >= 3 && stats.precip < 10) dropIcon = '💧💧';
+            else if (stats.precip >= 10) dropIcon = '💧💧💧';
+            
+            let emoji = getWeatherEmoji(stats.code, stats.precip / 12, isNight);
+            let precipStr = stats.precip > 0.5 ? `<span style="color:var(--primary-blue)">${dropIcon} ${stats.precip.toFixed(1)} mm</span>` : `<span style="color:rgba(0,0,0,0.3)">-</span>`;
+            
+            return `
+                <div class="weekly-half">
+                    <div class="half-title">${title}</div>
+                    <div class="half-icon">${emoji}</div>
+                    <div class="half-temp">${Math.round(stats.minT)}° / ${Math.round(stats.maxT)}°</div>
+                    <div class="half-precip">${precipStr}</div>
+                </div>
+            `;
+        }
+
         function renderForecasts(activeData) {
             let hourlySources = activeData.filter(d => d.hourly && d.hourly.length > 0);
             let hourlyContainer = document.getElementById('forecast-hourly-container');
@@ -759,7 +833,6 @@
             hourlyContainer.innerHTML = '';
             for (let i = 1; i <= 12; i++) {
                 let targetEpoch = currentHourEpoch + (i * 3600);
-                
                 let hourDate = new Date(targetEpoch * 1000);
                 let currentH = hourDate.getHours();
                 let isNight = (currentH >= 18 || currentH < 6);
@@ -935,76 +1008,34 @@
             
             if(dailyContainer.innerHTML === '') { dailyContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#7f8c8d; font-size:0.9rem;">Nem sikerült betölteni az adatokat.</div>'; }
 
-            // --- HETI ELŐREJELZÉS FELDOLGOZÁSA ---
+            // --- HETI ELŐREJELZÉS (DÉLELŐTT / DÉLUTÁN BONTÁSBAN) ---
             weeklyContainer.innerHTML = '';
             const daysHu = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
             let hasWeeklyData = false;
 
-            // Indulunk a holnapi naptól (d=1) a rákövetkező 7. napig (d=7)
             for (let dayOff = 1; dayOff <= 7; dayOff++) {
                 let startE = midnightEpoch + (dayOff * 86400);
+                let midE = startE + (12 * 3600);
                 let endE = startE + 86400;
                 
-                let sumMin = 0, sumMax = 0, sumPrecip = 0;
-                let validSourcesForDay = 0;
-                let daytimeCodes = [];
+                // DE (0-12h) - napos/nappali ikon
+                let amStats = getPeriodStats(hourlySources, startE, midE);
+                // DU (12-24h) - napos/esti ikon, a 18h utániak amúgy is felhősek vagy holdasak
+                let pmStats = getPeriodStats(hourlySources, midE, endE);
 
-                hourlySources.forEach(source => {
-                    // Leszűrjük a forrás adatait erre a specifikus napra
-                    let dayPoints = source.hourly.filter(h => h.timeEpoch >= startE && h.timeEpoch < endE && h.temp !== null);
-                    
-                    // Csak akkor számoljuk bele a forrást a napba, ha van elég adata (ne adjon hamis min/max-ot)
-                    if (dayPoints.length >= 4) {
-                        let minT = Math.min(...dayPoints.map(p => p.temp));
-                        let maxT = Math.max(...dayPoints.map(p => p.temp));
-                        
-                        // Átlagos óránkénti eső * 24 óra = napi összecsapadék
-                        let avgPrecipPerHour = dayPoints.reduce((a, b) => a + (b.precip || 0), 0) / dayPoints.length;
-                        let dailyPrecip = avgPrecipPerHour * 24;
-                        
-                        sumMin += minT;
-                        sumMax += maxT;
-                        sumPrecip += dailyPrecip;
-                        validSourcesForDay++;
-                        
-                        // Nappali kódok (06:00 - 18:00) a nap ikonjához
-                        dayPoints.forEach(p => {
-                            let h = new Date(p.timeEpoch * 1000).getHours();
-                            if (h >= 6 && h <= 18 && p.code !== undefined) {
-                                daytimeCodes.push(p.code);
-                            }
-                        });
-                    }
-                });
-
-                if (validSourcesForDay > 0) {
+                if (amStats !== null || pmStats !== null) {
                     hasWeeklyData = true;
-                    
-                    let avgMin = sumMin / validSourcesForDay;
-                    let avgMax = sumMax / validSourcesForDay;
-                    let avgPrecip = sumPrecip / validSourcesForDay;
-                    
-                    let modeCode = 3; // Alapértelmezett felhős
-                    if (daytimeCodes.length > 0) {
-                        modeCode = daytimeCodes.sort((a,b) => daytimeCodes.filter(v => v===a).length - daytimeCodes.filter(v => v===b).length).pop();
-                    }
-
-                    // A heti ikon mindig nappali (isNight = false)
-                    let emoji = getWeatherEmoji(modeCode, avgPrecip / 24, false);
                     
                     let dateObj = new Date(startE * 1000);
                     let dayName = dayOff === 1 ? "Holnap" : daysHu[dateObj.getDay()];
                     
-                    let precipStr = avgPrecip > 0.5 ? `<span style="color:var(--primary-blue)">💧 ${avgPrecip.toFixed(1)} mm</span>` : '';
-
+                    // HTML felépítés egy napra
                     weeklyContainer.innerHTML += `
-                        <div class="weekly-row">
-                            <div class="weekly-day">${dayName}</div>
-                            <div class="weekly-icon">${emoji}</div>
-                            <div class="weekly-precip">${precipStr}</div>
-                            <div class="weekly-temps">
-                                <span style="color:#7f8c8d">${Math.round(avgMin)}°</span> / 
-                                <span style="color:var(--dark-blue)">${Math.round(avgMax)}°</span>
+                        <div class="weekly-day-card">
+                            <div class="weekly-day-title">${dayName}</div>
+                            <div class="weekly-split">
+                                ${renderHalfDayBlock(amStats, "DE. (0-12)", false)}
+                                ${renderHalfDayBlock(pmStats, "DU. (12-24)", true)}
                             </div>
                         </div>
                     `;
